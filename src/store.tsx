@@ -1,4 +1,21 @@
-import { state } from './state'
-import { createStore } from 'redux'
+import { applyMiddleware, createStore } from 'redux';
+import { createLogger } from 'redux-logger';
+import createSagaMiddleware from 'redux-saga';
+import { rootSaga } from './sagas';
+import { reducerState } from './State';
 
-export const store = createStore(state)
+const sagaMiddleware = createSagaMiddleware()
+const middleware = [
+	sagaMiddleware,
+	process.env.NODE_ENV !== 'production' && createLogger({
+		collapsed: true,
+		timestamp: false,
+	}),
+].filter(Boolean)
+
+export const store = createStore(
+	reducerState,
+	applyMiddleware(...middleware),
+)
+
+sagaMiddleware.run(rootSaga)

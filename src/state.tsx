@@ -1,20 +1,22 @@
-import { Dictionary, zipObject } from 'lodash'
-import { TAction } from './TAction'
-import { ActionType } from './ActionType'
+import { Dictionary, zipObject } from 'lodash';
+import { ActionType } from './ActionType';
+import { TAction } from './TAction';
 
 export interface State {
 	readonly eventsById: Readonly<Dictionary<Readonly<gapi.client.calendar.Event>>>
 	readonly gapiReady: boolean
+	readonly isSignedIn: boolean
 }
 
 function makeState(): State {
 	return {
 		eventsById: {},
 		gapiReady: false,
+		isSignedIn: false,
 	}
 }
 
-export function state(state = makeState(), action: TAction): State {
+export function reducerState(state = makeState(), action: TAction): State {
 	switch (action.type) {
 		case ActionType.SetEvents:
 			return {
@@ -27,6 +29,11 @@ export function state(state = makeState(), action: TAction): State {
 			return {
 				...state,
 				gapiReady: true,
+			}
+		case ActionType.SetSignedIn:
+			return {
+				...state,
+				isSignedIn: action.flag,
 			}
 	}
 	return state
