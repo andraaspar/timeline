@@ -1,9 +1,10 @@
 
 export enum ActionType {
 	SetEvents = 'SetEvents',
-	GapiReady = 'GapiReady',
+	GapiStartInit = 'GapiStartInit',
 	LoadEvents = 'LoadEvents',
 	SetSignedIn = 'SetSignedIn',
 	SignIn = 'SignIn',
 	SignOut = 'SignOut',
+	SetGapiReady = 'SetGapiReady',
 }

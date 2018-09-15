@@ -3,7 +3,7 @@ import 'normalize.css/normalize.css';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { ActionGapiReady } from './ActionGapiReady';
+import { ActionGapiStartInit } from './ActionGapiStartInit';
 import { ActionType } from './ActionType';
 import { AppComp } from './AppComp';
 import './index.css';
@@ -17,8 +17,8 @@ const DAY = HOUR * 24
 const WEEK = DAY * 7
 
 	; (window as any).handleClientLoad = () => {
-		store.dispatch(withInterface<ActionGapiReady>({
-			type: ActionType.GapiReady,
+		store.dispatch(withInterface<ActionGapiStartInit>({
+			type: ActionType.GapiStartInit,
 		}))
 	}
 

@@ -25,10 +25,10 @@ export function reducerState(state = makeState(), action: TAction): State {
 					...zipObject(action.events.map(_ => _.id), action.events),
 				},
 			}
-		case ActionType.GapiReady:
+		case ActionType.SetGapiReady:
 			return {
 				...state,
-				gapiReady: true,
+				gapiReady: action.flag,
 			}
 		case ActionType.SetSignedIn:
 			return {

@@ -33,21 +33,22 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	render() {
 		return (
 			<Fragment>
-				<div>
-					{`GAPI: ${this.props.gapiReady}`}
-				</div>
-				<button
-					type='button'
-					onClick={() => {
-						if (this.props.isSignedIn) {
-							this.props.signOut()
-						} else {
-							this.props.signIn()
-						}
-					}}
-				>
-					{this.props.isSignedIn ? 'Sign out' : 'Sign in'}
-				</button>
+				{this.props.gapiReady ?
+					<button
+						type='button'
+						onClick={() => {
+							if (this.props.isSignedIn) {
+								this.props.signOut()
+							} else {
+								this.props.signIn()
+							}
+						}}
+					>
+						{this.props.isSignedIn ? 'Sign out' : 'Sign in'}
+					</button>
+					:
+					<div>Loading...</div>
+				}
 			</Fragment>
 		)
 	}
