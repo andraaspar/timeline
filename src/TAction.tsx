@@ -1,4 +1,4 @@
-import { ActionGapiStartInit } from './ActionGapiStartInit';
+import { ActionInitGapi } from './ActionInitGapi';
 import { ActionLoadEvents } from './ActionLoadEvents';
 import { ActionSetEvents } from './ActionSetEvents';
 import { ActionSetGapiReady } from './ActionSetGapiReady';
@@ -8,7 +8,7 @@ import { ActionSignOut } from './ActionSignOut';
 
 export type TAction =
 	| ActionSetEvents
-	| ActionGapiStartInit
+	| ActionInitGapi
 	| ActionLoadEvents
 	| ActionSetSignedIn
 	| ActionSignIn

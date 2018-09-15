@@ -1,13 +1,17 @@
-import { takeLatest } from 'redux-saga/effects';
+import { takeEvery, takeLatest } from 'redux-saga/effects';
+import { makeActionSetEvents } from './ActionSetEvents';
 import { makeActionSetGapiReady } from './ActionSetGapiReady';
 import { makeActionSetSignedIn } from './ActionSetSignedIn';
 import { ActionType } from './ActionType';
+import { makeIEventFromCalendarEvent } from './IEvent';
+import { WEEK } from './statics';
 import { store } from './store';
 
 export function* rootSaga() {
-	yield takeLatest(ActionType.GapiStartInit, initGapi)
+	yield takeLatest(ActionType.InitGapi, initGapi)
 	yield takeLatest(ActionType.SignIn, signIn)
 	yield takeLatest(ActionType.SignOut, signOut)
+	yield takeEvery(ActionType.LoadEvents, loadEvents)
 }
 
 export function initGapi() {
@@ -39,4 +43,19 @@ function signIn() {
 
 function signOut() {
 	gapi.auth2.getAuthInstance().signOut()
+}
+
+function loadEvents() {
+	gapi.client.calendar.events.list({
+		calendarId: 'primary',
+		timeMin: (new Date(Date.now() - 4 * WEEK)).toISOString(),
+		timeMax: (new Date(Date.now() + 4 * WEEK)).toISOString(),
+		showDeleted: false,
+		singleEvents: true,
+		orderBy: 'startTime'
+	}).then(response => {
+		store.dispatch(makeActionSetEvents({
+			events: response.result.items.map(makeIEventFromCalendarEvent),
+		}))
+	})
 }

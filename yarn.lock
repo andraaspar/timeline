@@ -22,15 +22,11 @@
   dependencies:
     "@types/gapi" "*"
 
-"@types/gapi.client.calendar@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@types/gapi.client.calendar/-/gapi.client.calendar-3.0.0.tgz#ebcde8788a02aad000eb8484361501eaf174ac6a"
+"@types/gapi.calendar@^3.0.3":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@types/gapi.calendar/-/gapi.calendar-3.0.3.tgz#f5b5a0b928361edb780112972613aed6e10e9877"
   dependencies:
-    "@types/gapi.client" "*"
-
-"@types/gapi.client@*":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@types/gapi.client/-/gapi.client-1.0.0.tgz#aa42501465fcf6440421050da70ec724d4c4c4df"
+    "@types/gapi" "*"
 
 "@types/gapi@*", "@types/gapi@^0.0.36":
   version "0.0.36"
@@ -5996,6 +5992,10 @@ require-main-filename@^1.0.1:
 requires-port@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/requires-port/-/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
+
+reselect@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/reselect/-/reselect-3.0.1.tgz#efdaa98ea7451324d092b2b2163a6a1d7a9a2147"
 
 resolve-cwd@^2.0.0:
   version "2.0.0"
