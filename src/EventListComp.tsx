@@ -57,7 +57,17 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 								<td>{this.getDuration(event.startTimestamp, event.endTimestamp)}</td>
 								<td>
 									<div>{this.getTimeDifference(now, event.endTimestamp)}</div>
-									<div>{new Date(event.endTimestamp).toLocaleString()}</div>
+									<div className={dateCss}>
+										{new Date(event.endTimestamp).toLocaleString(undefined, {
+											weekday: 'short',
+											year: 'numeric',
+											month: 'short',
+											day: '2-digit',
+											hour: 'numeric',
+											minute: '2-digit',
+											second: '2-digit',
+										})}
+									</div>
 								</td>
 								<td>{get(() => this.getDuration(event.endTimestamp, events[index + 1].startTimestamp))}</td>
 							</tr>
