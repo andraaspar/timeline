@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
+import { makeActionInitGapi } from './ActionInitGapi';
 import { makeActionLoadEvents } from './ActionLoadEvents';
 import { makeActionSignIn } from './ActionSignIn';
 import { makeActionSignOut } from './ActionSignOut';
@@ -21,6 +22,7 @@ export interface AppCompPropsDispatch {
 	signIn: () => void
 	signOut: () => void
 	loadEvents: () => void
+	onMounted: () => void
 }
 export interface AppCompPropsOwn { }
 export interface AppCompProps extends AppCompPropsOwn, AppCompPropsFromStore, AppCompPropsDispatch { }
@@ -67,7 +69,9 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 		)
 	}
 
-	// componentDidMount() {}
+	componentDidMount() {
+		this.props.onMounted()
+	}
 	// getSnapshotBeforeUpdate(prevProps: AppCompProps, prevState: AppCompState): AppCompSnapshot {}
 	// componentDidUpdate(prevProps: AppCompProps, prevState: AppCompState, snapshot: AppCompSnapshot) {}
 	// componentWillUnmount() {}
@@ -83,5 +87,6 @@ export const AppComp = connect(
 		signIn: () => dispatch(makeActionSignIn({})),
 		signOut: () => dispatch(makeActionSignOut({})),
 		loadEvents: () => dispatch(makeActionLoadEvents({})),
+		onMounted: () => dispatch(makeActionInitGapi({})),
 	}),
 )(AppCompPure)
