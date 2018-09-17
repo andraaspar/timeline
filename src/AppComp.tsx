@@ -9,7 +9,7 @@ import { makeActionSignOut } from './ActionSignOut';
 import { EventListComp } from './EventListComp';
 import { IEvent } from './IEvent';
 import { eventsOrderedSelector } from './selectors';
-import { State } from './State_';
+import { State } from './State';
 import { TAction } from './TAction';
 
 export interface AppCompPropsFromStore {

@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { State } from './State_';
+import { State } from './State';
 
 export const eventsByIdSelector = (state: State) => state.eventsById
 
