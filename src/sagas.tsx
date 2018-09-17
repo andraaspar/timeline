@@ -3,7 +3,7 @@ import { makeActionSetEvents } from './ActionSetEvents';
 import { makeActionSetGapiReady } from './ActionSetGapiReady';
 import { makeActionSetSignedIn } from './ActionSetSignedIn';
 import { ActionType } from './ActionType';
-import { makeIEventFromCalendarEvent } from './IEvent';
+import { IEvent, makeIEventFromCalendarEvent } from './IEvent';
 import { WEEK } from './statics';
 import { store } from './store';
 
@@ -11,7 +11,7 @@ export function* rootSaga() {
 	yield takeLatest(ActionType.InitGapi, initGapi)
 	yield takeLatest(ActionType.SignIn, signIn)
 	yield takeLatest(ActionType.SignOut, signOut)
-	yield takeEvery(ActionType.LoadEvents, loadEvents)
+	yield takeEvery(ActionType.LoadEvents, () => loadEvents())
 }
 
 export function initGapi() {
@@ -45,17 +45,22 @@ function signOut() {
 	gapi.auth2.getAuthInstance().signOut()
 }
 
-function loadEvents() {
+function loadEvents(events: ReadonlyArray<IEvent> = [], pageToken?: string) {
 	gapi.client.calendar.events.list({
 		calendarId: 'primary',
 		timeMin: (new Date(Date.now() - 4 * WEEK)).toISOString(),
-		timeMax: (new Date(Date.now() + 4 * WEEK)).toISOString(),
+		timeMax: (new Date(Date.now() + 16 * WEEK)).toISOString(),
 		showDeleted: false,
 		singleEvents: true,
-		orderBy: 'startTime'
+		orderBy: 'startTime',
 	}).then(response => {
-		store.dispatch(makeActionSetEvents({
-			events: response.result.items.map(makeIEventFromCalendarEvent),
-		}))
+		const newEvents = [...events, ...response.result.items.map(makeIEventFromCalendarEvent)]
+		if (response.result.nextPageToken) {
+			loadEvents(newEvents, response.result.nextPageToken)
+		} else {
+			store.dispatch(makeActionSetEvents({
+				events: newEvents,
+			}))
+		}
 	})
 }
