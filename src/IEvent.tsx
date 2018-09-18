@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 
-export interface IEvent extends gapi.client.calendar.Event {
+export interface IEvent extends Readonly<gapi.client.calendar.Event> {
 	readonly startTimestamp: number
 	readonly endTimestamp: number
 }

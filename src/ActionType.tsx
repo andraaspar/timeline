@@ -7,4 +7,6 @@ export enum ActionType {
 	SignIn = 'SignIn',
 	SignOut = 'SignOut',
 	SetGapiReady = 'SetGapiReady',
+	SetCalendars = 'SetCalendars',
+	LoadCalendars = 'LoadCalendars',
 }

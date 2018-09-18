@@ -1,5 +1,7 @@
 import { ActionInitGapi } from './ActionInitGapi';
+import { ActionLoadCalendars } from './ActionLoadCalendars';
 import { ActionLoadEvents } from './ActionLoadEvents';
+import { ActionSetCalendars } from './ActionSetCalendars';
 import { ActionSetEvents } from './ActionSetEvents';
 import { ActionSetGapiReady } from './ActionSetGapiReady';
 import { ActionSetSignedIn } from './ActionSetSignedIn';
@@ -14,3 +16,5 @@ export type TAction =
 	| ActionSignIn
 	| ActionSignOut
 	| ActionSetGapiReady
+	| ActionSetCalendars
+	| ActionLoadCalendars

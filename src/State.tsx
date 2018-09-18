@@ -1,11 +1,13 @@
 import { TSet } from 'illa/Type';
 import zipObject from 'lodash/zipObject';
 import { ActionType } from './ActionType';
+import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
 import { TAction } from './TAction';
 
 export interface State {
 	readonly eventsById: Readonly<TSet<IEvent>>
+	readonly calendarsById: Readonly<TSet<ICalendar>>
 	readonly gapiReady: boolean
 	readonly isSignedIn: boolean
 }
@@ -13,6 +15,7 @@ export interface State {
 function makeState(): State {
 	return {
 		eventsById: {},
+		calendarsById: {},
 		gapiReady: false,
 		isSignedIn: false,
 	}
@@ -34,6 +37,11 @@ export function reducerState(state = makeState(), action: TAction): State {
 			return {
 				...state,
 				isSignedIn: action.flag,
+			}
+		case ActionType.SetCalendars:
+			return {
+				...state,
+				calendarsById: zipObject(action.calendars.map(_ => _.id), action.calendars),
 			}
 	}
 	return state
