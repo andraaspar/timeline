@@ -1,10 +1,11 @@
-import { Dictionary, zipObject } from 'lodash';
+import { TSet } from 'illa/Type';
+import zipObject from 'lodash/zipObject';
 import { ActionType } from './ActionType';
 import { IEvent } from './IEvent';
 import { TAction } from './TAction';
 
 export interface State {
-	readonly eventsById: Readonly<Dictionary<IEvent>>
+	readonly eventsById: Readonly<TSet<IEvent>>
 	readonly gapiReady: boolean
 	readonly isSignedIn: boolean
 }
