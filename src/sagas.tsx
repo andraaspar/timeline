@@ -13,7 +13,7 @@ export function* rootSaga() {
 	yield takeLatest(ActionType.InitGapi, initGapi)
 	yield takeLatest(ActionType.SignIn, signIn)
 	yield takeLatest(ActionType.SignOut, signOut)
-	yield takeEvery(ActionType.LoadEvents, () => loadEvents())
+	yield takeEvery(ActionType.LoadEvents, () => loadEventsFromAllCalendars())
 	yield takeEvery(ActionType.LoadCalendars, () => loadCalendars())
 }
 
@@ -64,32 +64,34 @@ function loadCalendars(calendars: ReadonlyArray<ICalendar> = [], pageToken?: str
 		})
 }
 
-function loadEvents(events: ReadonlyArray<IEvent> = [], pageToken?: string) {
-	Promise.all(
-		Object.keys(store.getState().calendarsById).map(calendarId =>
-			new Promise<gapi.client.HttpRequestFulfilled<gapi.client.calendar.Events>>((resolve, reject) => {
-				gapi.client.calendar.events.list({
-					calendarId,
-					timeMin: (new Date(Date.now() - 4 * WEEK)).toISOString(),
-					timeMax: (new Date(Date.now() + 16 * WEEK)).toISOString(),
-					showDeleted: false,
-					singleEvents: true,
-					orderBy: 'startTime',
-					pageToken,
-				})
-					.then(response => {
-						const newEvents = [...events, ...response.result.items.map(makeIEventFromCalendarEvent)]
-						if (response.result.nextPageToken) {
-							loadEvents(newEvents, response.result.nextPageToken)
-						} else {
-							resolve(response)
-						}
-					})
-					.catch(e => {
-						reject(e)
-					})
+function loadEventsFromCalendar(calendarId: string, events: ReadonlyArray<IEvent> = [], pageToken?: string) {
+	return new Promise<gapi.client.HttpRequestFulfilled<gapi.client.calendar.Events>>((resolve, reject) => {
+		gapi.client.calendar.events.list({
+			calendarId,
+			timeMin: (new Date(Date.now() - 4 * WEEK)).toISOString(),
+			timeMax: (new Date(Date.now() + 16 * WEEK)).toISOString(),
+			showDeleted: false,
+			singleEvents: true,
+			orderBy: 'startTime',
+			pageToken,
+		})
+			.then(response => {
+				const newEvents = [...events, ...response.result.items.map(makeIEventFromCalendarEvent)]
+				if (response.result.nextPageToken) {
+					resolve(loadEventsFromCalendar(calendarId, newEvents, response.result.nextPageToken))
+				} else {
+					resolve(response)
+				}
 			})
-		)
+			.catch(e => {
+				reject(e)
+			})
+	})
+}
+
+function loadEventsFromAllCalendars() {
+	Promise.all(
+		Object.keys(store.getState().calendarsById).map(calendarId => loadEventsFromCalendar(calendarId))
 	)
 		.then(responses => {
 			const events = ([] as IEvent[]).concat(...responses.map(_ => _.result.items.map(makeIEventFromCalendarEvent)))
