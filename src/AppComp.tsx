@@ -4,7 +4,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { makeActionInitGapi } from './ActionInitGapi';
-import { makeActionLoadEvents } from './ActionLoadEvents';
+import { makeActionLoadCalendars } from './ActionLoadCalendars';
 import { makeActionSignIn } from './ActionSignIn';
 import { makeActionSignOut } from './ActionSignOut';
 import { EventListComp } from './EventListComp';
@@ -21,8 +21,8 @@ export interface AppCompPropsFromStore {
 export interface AppCompPropsDispatch {
 	signIn: () => void
 	signOut: () => void
-	loadEvents: () => void
-	onMounted: () => void
+	loadCalendars: () => void
+	initGapi: () => void
 }
 export interface AppCompPropsOwn { }
 export interface AppCompProps extends AppCompPropsOwn, AppCompPropsFromStore, AppCompPropsDispatch { }
@@ -58,7 +58,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 						{this.props.isSignedIn &&
 							<EventListComp
 								events={this.props.events}
-								loadEvents={this.props.loadEvents}
+								loadCalendars={this.props.loadCalendars}
 							/>
 						}
 					</>
@@ -70,7 +70,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	}
 
 	componentDidMount() {
-		this.props.onMounted()
+		this.props.initGapi()
 	}
 	// getSnapshotBeforeUpdate(prevProps: AppCompProps, prevState: AppCompState): AppCompSnapshot {}
 	// componentDidUpdate(prevProps: AppCompProps, prevState: AppCompState, snapshot: AppCompSnapshot) {}
@@ -86,7 +86,7 @@ export const AppComp = connect(
 	(dispatch: Dispatch<TAction>, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsDispatch>({
 		signIn: () => dispatch(makeActionSignIn({})),
 		signOut: () => dispatch(makeActionSignOut({})),
-		loadEvents: () => dispatch(makeActionLoadEvents({})),
-		onMounted: () => dispatch(makeActionInitGapi({})),
+		loadCalendars: () => dispatch(makeActionLoadCalendars({})),
+		initGapi: () => dispatch(makeActionInitGapi({})),
 	}),
 )(AppCompPure)

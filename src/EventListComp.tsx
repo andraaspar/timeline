@@ -7,7 +7,7 @@ import { DAY, HOUR, MINUTE, SECOND, WEEK } from './statics';
 
 export interface EventListCompProps {
 	readonly events: ReadonlyArray<IEvent>
-	readonly loadEvents: () => void
+	readonly loadCalendars: () => void
 }
 export interface EventListCompState { }
 export interface EventListCompSnapshot { }
@@ -74,7 +74,7 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 						)
 						:
 						<tr>
-							<td colSpan={3}><em>{`No events.`}</em></td>
+							<td colSpan={5}><em>{`No events.`}</em></td>
 						</tr>
 					}
 				</tbody>
@@ -83,7 +83,7 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 	}
 
 	componentDidMount() {
-		this.props.loadEvents()
+		this.props.loadCalendars()
 	}
 	// getSnapshotBeforeUpdate(prevProps: EventListCompProps, prevState: EventListCompState): EventListCompSnapshot {}
 	// componentDidUpdate(prevProps: EventListCompProps, prevState: EventListCompState, snapshot: EventListCompSnapshot) {}

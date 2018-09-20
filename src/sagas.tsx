@@ -1,5 +1,5 @@
 import { takeEvery, takeLatest } from 'redux-saga/effects';
-import { makeActionLoadCalendars } from './ActionLoadCalendars';
+import { makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars';
 import { makeActionSetCalendars } from './ActionSetCalendars';
 import { makeActionSetEvents } from './ActionSetEvents';
 import { makeActionSetGapiReady } from './ActionSetGapiReady';
@@ -14,8 +14,8 @@ export function* rootSaga() {
 	yield takeLatest(ActionType.InitGapi, initGapi)
 	yield takeLatest(ActionType.SignIn, signIn)
 	yield takeLatest(ActionType.SignOut, signOut)
-	yield takeEvery(ActionType.LoadEvents, () => store.dispatch(makeActionLoadCalendars({})))
-	yield takeEvery(ActionType.SetCalendars, () => loadEventsFromAllCalendars())
+	yield takeEvery(ActionType.LoadEventsFromAllCalendars, () => loadEventsFromAllCalendars())
+	yield takeEvery(ActionType.SetCalendars, () => setCalendars())
 	yield takeEvery(ActionType.LoadCalendars, () => loadCalendars())
 }
 
@@ -48,6 +48,10 @@ function signIn() {
 
 function signOut() {
 	gapi.auth2.getAuthInstance().signOut()
+}
+
+function setCalendars() {
+	store.dispatch(makeActionLoadEventsFromAllCalendars({}))
 }
 
 function loadCalendars(calendars: ReadonlyArray<ICalendar> = [], pageToken?: string): Promise<void> {
