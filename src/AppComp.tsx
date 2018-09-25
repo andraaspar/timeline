@@ -1,4 +1,4 @@
-import { withInterface } from 'illa/Type';
+import { TSet, withInterface } from 'illa/Type';
 import * as React from 'react';
 import { Component } from 'react';
 import { connect } from 'react-redux';
@@ -8,6 +8,7 @@ import { makeActionLoadCalendars } from './ActionLoadCalendars';
 import { makeActionSignIn } from './ActionSignIn';
 import { makeActionSignOut } from './ActionSignOut';
 import { EventListComp } from './EventListComp';
+import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
 import { eventsOrderedSelector } from './selectors';
 import { State } from './State';
@@ -17,6 +18,7 @@ export interface AppCompPropsFromStore {
 	readonly gapiReady: boolean
 	readonly isSignedIn: boolean
 	readonly events: ReadonlyArray<IEvent>
+	readonly calendarsById: Readonly<TSet<ICalendar>>
 }
 export interface AppCompPropsDispatch {
 	signIn: () => void
@@ -57,6 +59,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 						</button>
 						{this.props.isSignedIn &&
 							<EventListComp
+								calendarsById={this.props.calendarsById}
 								events={this.props.events}
 								loadCalendars={this.props.loadCalendars}
 							/>
@@ -82,6 +85,7 @@ export const AppComp = connect(
 		gapiReady: state.gapiReady,
 		isSignedIn: state.isSignedIn,
 		events: eventsOrderedSelector(state),
+		calendarsById: state.calendarsById,
 	}),
 	(dispatch: Dispatch<TAction>, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsDispatch>({
 		signIn: () => dispatch(makeActionSignIn({})),

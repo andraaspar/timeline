@@ -1,11 +1,14 @@
 import { css } from 'emotion';
 import { get } from 'illa/FunctionUtil';
+import { TSet } from 'illa/Type';
 import * as React from 'react';
 import { Component } from 'react';
+import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from './statics';
 
 export interface EventListCompProps {
+	readonly calendarsById: Readonly<TSet<ICalendar>>
 	readonly events: ReadonlyArray<IEvent>
 	readonly loadCalendars: () => void
 }
@@ -39,7 +42,19 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 					{this.props.events.length ?
 						this.props.events.map((event, index, events) =>
 							<tr key={event.id}>
-								<td>{event.summary}</td>
+								<td className={nameCss}>
+									<span
+										className={colorCss}
+										style={{
+											backgroundColor: this.props.calendarsById[event.calendarId].backgroundColor,
+											color: this.props.calendarsById[event.calendarId].foregroundColor,
+										}}
+									>
+										{`@`}
+									</span>
+									{` `}
+									{event.summary}
+								</td>
 								<td>
 									<div>{this.getTimeDifference(now, event.startTimestamp)}</div>
 									<div className={dateCss}>
@@ -153,8 +168,23 @@ const tableCss = css({
 })
 
 const dateCss = css({
-	label: `EventListComp-table`,
+	label: `EventListComp-date`,
 	fontSize: 10,
 	lineHeight: `14px`,
 	color: 'gray',
+})
+
+const colorCss = css({
+	label: `EventListComp-color`,
+	display: 'inline-block',
+	borderWidth: 1,
+	borderStyle: 'solid',
+	borderColor: 'rgba(0, 0, 0, .2)',
+	borderRadius: 3,
+	padding: 3,
+})
+
+const nameCss = css({
+	label: `EventListComp-name`,
+	fontWeight: 'bold',
 })

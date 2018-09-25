@@ -71,7 +71,7 @@ function loadCalendars(calendars: ReadonlyArray<ICalendar> = [], pageToken?: str
 }
 
 function loadEventsFromCalendar(calendarId: string, events: ReadonlyArray<IEvent> = [], pageToken?: string) {
-	return new Promise<gapi.client.HttpRequestFulfilled<gapi.client.calendar.Events>>((resolve, reject) => {
+	return new Promise<IEvent[]>((resolve, reject) => {
 		gapi.client.calendar.events.list({
 			calendarId,
 			timeMin: (new Date(Date.now() - 4 * WEEK)).toISOString(),
@@ -82,11 +82,11 @@ function loadEventsFromCalendar(calendarId: string, events: ReadonlyArray<IEvent
 			pageToken,
 		})
 			.then(response => {
-				const newEvents = [...events, ...response.result.items.map(makeIEventFromCalendarEvent)]
+				const newEvents = [...events, ...response.result.items.map(_ => makeIEventFromCalendarEvent(calendarId, _))]
 				if (response.result.nextPageToken) {
 					resolve(loadEventsFromCalendar(calendarId, newEvents, response.result.nextPageToken))
 				} else {
-					resolve(response)
+					resolve(newEvents)
 				}
 			})
 			.catch(e => {
@@ -97,10 +97,15 @@ function loadEventsFromCalendar(calendarId: string, events: ReadonlyArray<IEvent
 
 function loadEventsFromAllCalendars() {
 	return Promise.all(
-		Object.keys(store.getState().calendarsById).map(calendarId => loadEventsFromCalendar(calendarId))
+		Object.keys(store.getState().calendarsById)
+			.filter(calendarId => {
+				const calendar = store.getState().calendarsById[calendarId]
+				return !!calendar.selected
+			})
+			.map(calendarId => loadEventsFromCalendar(calendarId))
 	)
-		.then(responses => {
-			const events = ([] as IEvent[]).concat(...responses.map(_ => _.result.items.map(makeIEventFromCalendarEvent)))
+		.then(loadedEvents => {
+			const events = ([] as IEvent[]).concat(...loadedEvents)
 			store.dispatch(makeActionSetEvents({
 				events,
 			}))
