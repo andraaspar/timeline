@@ -9,4 +9,5 @@ export enum ActionType {
 	SetGapiReady = 'SetGapiReady',
 	SetCalendars = 'SetCalendars',
 	LoadCalendars = 'LoadCalendars',
+	SetNow = 'SetNow',
 }

@@ -53,6 +53,11 @@ export function reducerState(state = makeState(), action: TAction): State {
 				...state,
 				calendarsById: zipObject(action.calendars.map(_ => _.id), action.calendars),
 			}
+		case ActionType.SetNow:
+			return {
+				...state,
+				now: action.now,
+			}
 	}
 	return state
 }
