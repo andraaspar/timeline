@@ -46,8 +46,13 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 								{event.summary}
 							</div>
 							<div className={metaCss}>
-								<div>
-									<div>{this.getTimeDifference(now, event.startTimestamp)}</div>
+								<div className={metaNameCss}>
+									{`S`}
+								</div>
+								<div className={metaValueCss}>
+									<div className={startCss}>
+										{this.getTimeDifference(now, event.startTimestamp)}
+									</div>
 									<div className={dateCss}>
 										{new Date(event.startTimestamp).toLocaleString(undefined, {
 											weekday: 'short',
@@ -60,8 +65,16 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 										})}
 									</div>
 								</div>
-								<div>{this.getDuration(event.startTimestamp, event.endTimestamp)}</div>
-								<div>
+								<div className={metaNameCss}>
+									{`D`}
+								</div>
+								<div className={metaValueCss}>
+									{this.getDuration(event.startTimestamp, event.endTimestamp)}
+								</div>
+								<div className={metaNameCss}>
+									{`E`}
+								</div>
+								<div className={metaValueCss}>
 									<div>{this.getTimeDifference(now, event.endTimestamp)}</div>
 									<div className={dateCss}>
 										{new Date(event.endTimestamp).toLocaleString(undefined, {
@@ -75,7 +88,12 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 										})}
 									</div>
 								</div>
-								<div>{get(() => this.getDuration(event.endTimestamp, events[index + 1].startTimestamp))}</div>
+								<div className={metaNameCss}>
+									{`N`}
+								</div>
+								<div className={metaValueCss}>
+									{get(() => this.getDuration(event.endTimestamp, events[index + 1].startTimestamp))}
+								</div>
 							</div>
 						</div>
 					)}
@@ -153,10 +171,11 @@ const itemsCss = css({
 const itemCss = css({
 	label: `EventListComp-item`,
 	marginTop: 5,
-	borderWidth: 1,
-	borderStyle: 'solid',
-	borderColor: 'rgba(0, 0, 0, .2)',
-	borderRadius: 3,
+	// borderWidth: 1,
+	// borderStyle: 'solid',
+	// borderColor: 'rgba(0, 0, 0, .2)',
+	boxShadow: `0 1px 3px 1px rgba(0, 0, 0, .2)`,
+	borderRadius: `4px 0 4px 0`,
 	display: 'grid',
 	gridTemplateRows: `min-content [header] auto [rest]`,
 	gridTemplateColumns: `min-content [color] auto [rest]`,
@@ -165,6 +184,7 @@ const itemCss = css({
 		`. meta`,
 	].map(_ => `"${_}"`).join(' '),
 	gridGap: 5,
+	paddingBottom: 10,
 })
 
 const colorCss = css({
@@ -174,7 +194,7 @@ const colorCss = css({
 	borderWidth: 1,
 	borderStyle: 'solid',
 	borderColor: 'rgba(0, 0, 0, .2)',
-	borderRadius: 3,
+	borderRadius: `3px 0 3px 0`,
 	padding: 3,
 })
 
@@ -195,4 +215,30 @@ const titleCss = css({
 const metaCss = css({
 	label: `EventListComp-meta`,
 	gridArea: 'meta',
+	display: 'grid',
+	gridTemplateColumns: `min-content [name] auto [value]`,
+	gridRowGap: 1,
+	gridColumnGap: 5,
+})
+
+const metaNameCss = css({
+	label: `EventListComp-metaName`,
+	gridColumn: 'name-start name-end',
+	justifySelf: 'end',
+	alignSelf: 'baseline',
+	fontSize: 10,
+	fontWeight: 'bold',
+	lineHeight: `14px`,
+	color: 'gray',
+})
+
+const metaValueCss = css({
+	label: `EventListComp-metaValue`,
+	gridColumn: 'value-start value-end',
+	alignSelf: 'baseline',
+})
+
+const startCss = css({
+	label: `EventListComp-start`,
+	fontWeight: 'bold',
 })
