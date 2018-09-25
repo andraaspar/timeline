@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect';
 import { State } from './State';
 
+export const nowSelector = (state: State) => state.now
 export const eventsByIdSelector = (state: State) => state.eventsById
 
 export const eventsOrderedSelector = createSelector(
@@ -17,5 +18,21 @@ export const eventsOrderedSelector = createSelector(
 			}
 			return (a.summary || '').localeCompare(b.summary)
 		})
+	},
+)
+
+export const eventsOrderedFutureSelector = createSelector(
+	eventsOrderedSelector,
+	nowSelector,
+	(eventsOrdered, now) => {
+		return eventsOrdered.slice(eventsOrdered.findIndex(event => event.startTimestamp >= now))
+	},
+)
+
+export const eventsOrderedPastSelector = createSelector(
+	eventsOrderedSelector,
+	nowSelector,
+	(eventsOrdered, now) => {
+		return eventsOrdered.slice(0, eventsOrdered.findIndex(event => event.startTimestamp >= now)).reverse()
 	},
 )

@@ -26,7 +26,8 @@ export function initGapi() {
 			clientId: '70722773944-snk5oonsveejagkeuf1v6p92c05f1e01.apps.googleusercontent.com',
 			discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
 			scope: 'https://www.googleapis.com/auth/calendar.readonly',
-		}).then(() => {
+		})
+		.then(() => {
 			gapi.auth2.getAuthInstance().isSignedIn.listen(updateSignInStatus)
 			updateSignInStatus(gapi.auth2.getAuthInstance().isSignedIn.get())
 			store.dispatch(makeActionSetGapiReady({

@@ -9,7 +9,8 @@ import { DAY, HOUR, MINUTE, SECOND, WEEK } from './statics';
 
 export interface EventListCompProps {
 	readonly calendarsById: Readonly<TSet<ICalendar>>
-	readonly events: ReadonlyArray<IEvent>
+	readonly orderedEvents: ReadonlyArray<IEvent>
+	readonly eventsLoaded: boolean
 	readonly loadCalendars: () => void
 }
 export interface EventListCompState { }
@@ -27,35 +28,25 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 	// shouldComponentUpdate(nextProps: EventListCompProps, nextState: EventListCompState): boolean {}
 	render() {
 		const now = Date.now()
-		return (
-			<table className={tableCss}>
-				<thead>
-					<tr>
-						<th>{`Summary`}</th>
-						<th>{`Start`}</th>
-						<th>{`Duration`}</th>
-						<th>{`End`}</th>
-						<th>{`Until next`}</th>
-					</tr>
-				</thead>
-				<tbody>
-					{this.props.events.length ?
-						this.props.events.map((event, index, events) =>
-							<tr key={event.id}>
-								<td className={nameCss}>
-									<span
-										className={colorCss}
-										style={{
-											backgroundColor: this.props.calendarsById[event.calendarId].backgroundColor,
-											color: this.props.calendarsById[event.calendarId].foregroundColor,
-										}}
-									>
-										{`@`}
-									</span>
-									{` `}
-									{event.summary}
-								</td>
-								<td>
+		return (this.props.eventsLoaded ?
+			(this.props.orderedEvents.length ?
+				<div className={itemsCss}>
+					{this.props.orderedEvents.map((event, index, events) =>
+						<div key={event.id} className={itemCss}>
+							<div
+								className={colorCss}
+								style={{
+									backgroundColor: this.props.calendarsById[event.calendarId].backgroundColor,
+									color: this.props.calendarsById[event.calendarId].foregroundColor,
+								}}
+							>
+								{`@`}
+							</div>
+							<div className={titleCss}>
+								{event.summary}
+							</div>
+							<div className={metaCss}>
+								<div>
 									<div>{this.getTimeDifference(now, event.startTimestamp)}</div>
 									<div className={dateCss}>
 										{new Date(event.startTimestamp).toLocaleString(undefined, {
@@ -68,9 +59,9 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 											second: '2-digit',
 										})}
 									</div>
-								</td>
-								<td>{this.getDuration(event.startTimestamp, event.endTimestamp)}</td>
-								<td>
+								</div>
+								<div>{this.getDuration(event.startTimestamp, event.endTimestamp)}</div>
+								<div>
 									<div>{this.getTimeDifference(now, event.endTimestamp)}</div>
 									<div className={dateCss}>
 										{new Date(event.endTimestamp).toLocaleString(undefined, {
@@ -83,17 +74,21 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 											second: '2-digit',
 										})}
 									</div>
-								</td>
-								<td>{get(() => this.getDuration(event.endTimestamp, events[index + 1].startTimestamp))}</td>
-							</tr>
-						)
-						:
-						<tr>
-							<td colSpan={5}><em>{`No events.`}</em></td>
-						</tr>
-					}
-				</tbody>
-			</table>
+								</div>
+								<div>{get(() => this.getDuration(event.endTimestamp, events[index + 1].startTimestamp))}</div>
+							</div>
+						</div>
+					)}
+				</div>
+				:
+				<div>
+					<em>{`No events.`}</em>
+				</div>
+			)
+			:
+			<div>
+				{`Loading...`}
+			</div>
 		)
 	}
 
@@ -150,21 +145,37 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 	}
 }
 
-const tableCss = css({
-	label: `EventListComp-table`,
-	width: `100%`,
-	tableLayout: 'fixed',
-	borderCollapse: 'collapse',
-	'> * > tr > *': {
-		borderWidth: 1,
-		borderStyle: 'solid',
-		borderColor: 'gray',
-		verticalAlign: 'baseline',
-		textAlign: 'left',
-	},
-	'> tbody > tr:nth-child(odd) > *': {
-		backgroundColor: '#eee',
-	}
+const itemsCss = css({
+	label: `EventListComp-items`,
+	marginTop: -5,
+})
+
+const itemCss = css({
+	label: `EventListComp-item`,
+	marginTop: 5,
+	borderWidth: 1,
+	borderStyle: 'solid',
+	borderColor: 'rgba(0, 0, 0, .2)',
+	borderRadius: 3,
+	display: 'grid',
+	gridTemplateRows: `min-content [header] auto [rest]`,
+	gridTemplateColumns: `min-content [color] auto [rest]`,
+	gridTemplateAreas: [
+		`color title`,
+		`. meta`,
+	].map(_ => `"${_}"`).join(' '),
+	gridGap: 5,
+})
+
+const colorCss = css({
+	label: `EventListComp-color`,
+	gridArea: 'color',
+	alignSelf: 'baseline',
+	borderWidth: 1,
+	borderStyle: 'solid',
+	borderColor: 'rgba(0, 0, 0, .2)',
+	borderRadius: 3,
+	padding: 3,
 })
 
 const dateCss = css({
@@ -174,17 +185,14 @@ const dateCss = css({
 	color: 'gray',
 })
 
-const colorCss = css({
-	label: `EventListComp-color`,
-	display: 'inline-block',
-	borderWidth: 1,
-	borderStyle: 'solid',
-	borderColor: 'rgba(0, 0, 0, .2)',
-	borderRadius: 3,
-	padding: 3,
+const titleCss = css({
+	label: `EventListComp-title`,
+	gridArea: 'title',
+	fontWeight: 'bold',
+	alignSelf: 'baseline',
 })
 
-const nameCss = css({
-	label: `EventListComp-name`,
-	fontWeight: 'bold',
+const metaCss = css({
+	label: `EventListComp-meta`,
+	gridArea: 'meta',
 })

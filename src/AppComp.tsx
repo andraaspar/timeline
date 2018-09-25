@@ -1,3 +1,4 @@
+import { css } from 'emotion';
 import { TSet, withInterface } from 'illa/Type';
 import * as React from 'react';
 import { Component } from 'react';
@@ -10,14 +11,16 @@ import { makeActionSignOut } from './ActionSignOut';
 import { EventListComp } from './EventListComp';
 import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
-import { eventsOrderedSelector } from './selectors';
+import { eventsOrderedFutureSelector, eventsOrderedPastSelector } from './selectors';
 import { State } from './State';
 import { TAction } from './TAction';
 
 export interface AppCompPropsFromStore {
 	readonly gapiReady: boolean
 	readonly isSignedIn: boolean
-	readonly events: ReadonlyArray<IEvent>
+	readonly orderedPastEvents: ReadonlyArray<IEvent>
+	readonly orderedFutureEvents: ReadonlyArray<IEvent>
+	readonly eventsLoaded: boolean
 	readonly calendarsById: Readonly<TSet<ICalendar>>
 }
 export interface AppCompPropsDispatch {
@@ -57,13 +60,28 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 						>
 							{this.props.isSignedIn ? 'Sign out' : 'Sign in'}
 						</button>
-						{this.props.isSignedIn &&
-							<EventListComp
-								calendarsById={this.props.calendarsById}
-								events={this.props.events}
-								loadCalendars={this.props.loadCalendars}
-							/>
-						}
+						<div className={eventsCss}>
+							<div className={eventsPanelCss}>
+								{this.props.isSignedIn &&
+									<EventListComp
+										calendarsById={this.props.calendarsById}
+										orderedEvents={this.props.orderedFutureEvents}
+										eventsLoaded={this.props.eventsLoaded}
+										loadCalendars={this.props.loadCalendars}
+									/>
+								}
+							</div>
+							<div className={eventsPanelCss}>
+								{this.props.isSignedIn &&
+									<EventListComp
+										calendarsById={this.props.calendarsById}
+										orderedEvents={this.props.orderedPastEvents}
+										eventsLoaded={this.props.eventsLoaded}
+										loadCalendars={this.props.loadCalendars}
+									/>
+								}
+							</div>
+						</div>
 					</>
 					:
 					<div>{`Loading...`}</div>
@@ -84,7 +102,9 @@ export const AppComp = connect(
 	(state: State, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsFromStore>({
 		gapiReady: state.gapiReady,
 		isSignedIn: state.isSignedIn,
-		events: eventsOrderedSelector(state),
+		orderedFutureEvents: eventsOrderedFutureSelector(state),
+		orderedPastEvents: eventsOrderedPastSelector(state),
+		eventsLoaded: state.eventsLoaded,
 		calendarsById: state.calendarsById,
 	}),
 	(dispatch: Dispatch<TAction>, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsDispatch>({
@@ -94,3 +114,16 @@ export const AppComp = connect(
 		initGapi: () => dispatch(makeActionInitGapi({})),
 	}),
 )(AppCompPure)
+
+const eventsCss = css({
+	label: `AppComp-events`,
+	display: 'flex',
+})
+
+const eventsPanelCss = css({
+	label: `AppComp-eventsPanel`,
+	margin: 5,
+	flexBasis: '100%',
+})
+
+
