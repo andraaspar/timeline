@@ -6,6 +6,7 @@ import { AppComp } from './AppComp';
 import './index.css';
 import registerServiceWorker from './registerServiceWorker';
 import { store } from './store';
+import { Timer } from './Timer';
 
 ReactDOM.render(
 	<Provider store={store}>
@@ -14,3 +15,5 @@ ReactDOM.render(
 	document.getElementById('root')
 )
 registerServiceWorker()
+Timer.listen()
+Timer.start()

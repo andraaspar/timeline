@@ -9,12 +9,13 @@ import { ActionType } from './ActionType';
 import { GAPI } from './GAPI';
 import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
+import { SECOND } from './statics';
 
 export function* rootSaga() {
 	yield fork(gapiSaga)
 }
 
-function* tryUntilSuccess(fun: () => Promise<any>, ms: number = 5000) {
+function* tryUntilSuccess(fun: () => Promise<any>, ms: number = 5 * SECOND) {
 	while (true) {
 		try {
 			return yield fun()
