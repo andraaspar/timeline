@@ -12,6 +12,8 @@ export interface State {
 	readonly gapiReady: boolean
 	readonly isSignedIn: boolean
 	readonly now: number
+	readonly futureWeeks: number
+	readonly pastWeeks: number
 }
 
 function makeState(): State {
@@ -22,6 +24,8 @@ function makeState(): State {
 		gapiReady: false,
 		isSignedIn: false,
 		now: Date.now(),
+		futureWeeks: 2,
+		pastWeeks: 1,
 	}
 }
 
@@ -57,6 +61,18 @@ export function reducerState(state = makeState(), action: TAction): State {
 			return {
 				...state,
 				now: action.now,
+			}
+		case ActionType.SetInterval:
+			if (action.isFuture) {
+				return {
+					...state,
+					futureWeeks: action.weeks,
+				}
+			} else {
+				return {
+					...state,
+					pastWeeks: action.weeks,
+				}
 			}
 	}
 	return state

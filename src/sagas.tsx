@@ -38,6 +38,7 @@ function* gapiSaga() {
 	yield takeLatest(ActionType.SignOut, signOut)
 	yield takeLatest(ActionType.LoadEventsFromAllCalendars, loadEventsFromAllCalendars)
 	yield takeLatest(ActionType.LoadCalendars, loadCalendars)
+	yield takeLatest(ActionType.SetInterval, setInterval_)
 	yield put(makeActionSetGapiReady({
 		flag: true,
 	}))
@@ -63,5 +64,10 @@ function* loadCalendars() {
 	yield put(makeActionSetCalendars({
 		calendars,
 	}))
+	yield put(makeActionLoadEventsFromAllCalendars({}))
+}
+
+function* setInterval_() {
+	yield delay(600)
 	yield put(makeActionLoadEventsFromAllCalendars({}))
 }

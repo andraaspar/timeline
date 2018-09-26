@@ -75,10 +75,11 @@ export namespace GAPI {
 
 	export function loadEventsFromCalendar(calendarId: string, events: ReadonlyArray<IEvent> = [], pageToken?: string) {
 		return new Promise<IEvent[]>((resolve, reject) => {
+			const { futureWeeks, pastWeeks } = store.getState()
 			gapi.client.calendar.events.list({
 				calendarId,
-				timeMin: (new Date(Date.now() - 4 * WEEK)).toISOString(),
-				timeMax: (new Date(Date.now() + 16 * WEEK)).toISOString(),
+				timeMin: (new Date(Date.now() - pastWeeks * WEEK)).toISOString(),
+				timeMax: (new Date(Date.now() + futureWeeks * WEEK)).toISOString(),
 				showDeleted: false,
 				singleEvents: true,
 				orderBy: 'startTime',

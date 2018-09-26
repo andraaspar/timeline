@@ -4,6 +4,7 @@ import { ActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalen
 import { ActionSetCalendars } from './ActionSetCalendars';
 import { ActionSetEvents } from './ActionSetEvents';
 import { ActionSetGapiReady } from './ActionSetGapiReady';
+import { ActionSetInterval } from './ActionSetInterval';
 import { ActionSetNow } from './ActionSetNow';
 import { ActionSetSignedIn } from './ActionSetSignedIn';
 import { ActionSignIn } from './ActionSignIn';
@@ -20,3 +21,4 @@ export type TAction =
 	| ActionSetCalendars
 	| ActionLoadCalendars
 	| ActionSetNow
+	| ActionSetInterval
