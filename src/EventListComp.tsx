@@ -1,4 +1,4 @@
-import { css } from 'emotion';
+import { css, cx } from 'emotion';
 import { get } from 'illa/FunctionUtil';
 import { TSet } from 'illa/Type';
 import * as React from 'react';
@@ -11,7 +11,6 @@ export interface EventListCompProps {
 	readonly calendarsById: Readonly<TSet<ICalendar>>
 	readonly orderedEvents: ReadonlyArray<IEvent>
 	readonly eventsLoaded: boolean
-	readonly loadCalendars: () => void
 }
 export interface EventListCompState { }
 export interface EventListCompSnapshot { }
@@ -110,9 +109,7 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 		)
 	}
 
-	componentDidMount() {
-		this.props.loadCalendars()
-	}
+	// componentDidMount() {}
 	// getSnapshotBeforeUpdate(prevProps: EventListCompProps, prevState: EventListCompState): EventListCompSnapshot {}
 	// componentDidUpdate(prevProps: EventListCompProps, prevState: EventListCompState, snapshot: EventListCompSnapshot) {}
 	// componentWillUnmount() {}
@@ -201,7 +198,7 @@ const colorCss = css({
 const dateCss = css({
 	label: `EventListComp-date`,
 	fontSize: 10,
-	lineHeight: `14px`,
+	lineHeight: `12px`,
 	color: 'gray',
 })
 
@@ -217,26 +214,35 @@ const metaCss = css({
 	gridArea: 'meta',
 	display: 'grid',
 	gridTemplateColumns: `min-content [name] auto [value]`,
-	gridRowGap: 1,
-	gridColumnGap: 5,
 })
 
-const metaNameCss = css({
-	label: `EventListComp-metaName`,
-	gridColumn: 'name-start name-end',
-	justifySelf: 'end',
-	alignSelf: 'baseline',
-	fontSize: 10,
-	fontWeight: 'bold',
-	lineHeight: `14px`,
-	color: 'gray',
+const metaCellCss = css({
+	// alignSelf: 'baseline',
+	borderTop: `1px solid rgba(0, 0, 0, .2)`,
+	padding: `1px 0`,
 })
 
-const metaValueCss = css({
-	label: `EventListComp-metaValue`,
-	gridColumn: 'value-start value-end',
-	alignSelf: 'baseline',
-})
+const metaNameCss = cx(
+	metaCellCss,
+	css({
+		label: `EventListComp-metaName`,
+		gridColumn: 'name-start name-end',
+		justifySelf: 'end',
+		fontSize: 10,
+		fontWeight: 'bold',
+		// lineHeight: `14px`,
+		color: 'gray',
+		paddingRight: 10,
+	}),
+)
+
+const metaValueCss = cx(
+	metaCellCss,
+	css({
+		label: `EventListComp-metaValue`,
+		gridColumn: 'value-start value-end',
+	}),
+)
 
 const startCss = css({
 	label: `EventListComp-start`,

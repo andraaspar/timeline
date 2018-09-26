@@ -11,6 +11,7 @@ import { makeActionSignOut } from './ActionSignOut';
 import { EventListComp } from './EventListComp';
 import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
+import { OnMountComp } from './OnMountComp';
 import { eventsOrderedFutureSelector, eventsOrderedPastSelector } from './selectors';
 import { State } from './State';
 import { TAction } from './TAction';
@@ -60,28 +61,26 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 						>
 							{this.props.isSignedIn ? 'Sign out' : 'Sign in'}
 						</button>
-						<div className={eventsCss}>
-							<div className={eventsPanelCss}>
-								{this.props.isSignedIn &&
-									<EventListComp
-										calendarsById={this.props.calendarsById}
-										orderedEvents={this.props.orderedFutureEvents}
-										eventsLoaded={this.props.eventsLoaded}
-										loadCalendars={this.props.loadCalendars}
-									/>
-								}
-							</div>
-							<div className={eventsPanelCss}>
-								{this.props.isSignedIn &&
-									<EventListComp
-										calendarsById={this.props.calendarsById}
-										orderedEvents={this.props.orderedPastEvents}
-										eventsLoaded={this.props.eventsLoaded}
-										loadCalendars={this.props.loadCalendars}
-									/>
-								}
-							</div>
-						</div>
+						{this.props.isSignedIn &&
+							<OnMountComp onMount={this.props.loadCalendars}>
+								<div className={eventsCss}>
+									<div className={eventsPanelCss}>
+										<EventListComp
+											calendarsById={this.props.calendarsById}
+											orderedEvents={this.props.orderedFutureEvents}
+											eventsLoaded={this.props.eventsLoaded}
+										/>
+									</div>
+									<div className={eventsPanelCss}>
+										<EventListComp
+											calendarsById={this.props.calendarsById}
+											orderedEvents={this.props.orderedPastEvents}
+											eventsLoaded={this.props.eventsLoaded}
+										/>
+									</div>
+								</div>
+							</OnMountComp>
+						}
 					</>
 					:
 					<div>{`Loading...`}</div>
