@@ -45,17 +45,35 @@ export interface AppCompPropsDispatch {
 }
 export interface AppCompPropsOwn { }
 export interface AppCompProps extends AppCompPropsOwn, AppCompPropsFromStore, AppCompPropsDispatch { }
-export interface AppCompState { }
+export interface AppCompState {
+	startWeeksLastValue: number
+	endWeeksLastValue: number
+	startWeeksStringValue: string
+	endWeeksStringValue: string
+}
 
 class AppCompPure extends Component<AppCompProps, AppCompState> {
 	static displayName = __filename
 
-	// constructor(props: AppCompProps) {
-	// 	super(props)
-	// 	// this.state = {}
-	// }
+	constructor(props: AppCompProps) {
+		super(props)
+		this.state = {
+			startWeeksLastValue: NaN,
+			endWeeksLastValue: NaN,
+			startWeeksStringValue: '',
+			endWeeksStringValue: '',
+		}
+	}
 	// componentWillMount() {}
-	// getDerivedStateFromProps(nextProps: AppCompProps, prevState: AppCompState): AppCompState | null {}
+	static getDerivedStateFromProps(nextProps: AppCompProps, prevState: AppCompState): AppCompState | null {
+		return {
+			...prevState,
+			startWeeksLastValue: nextProps.startWeeks,
+			endWeeksLastValue: nextProps.endWeeks,
+			startWeeksStringValue: nextProps.startWeeks !== prevState.startWeeksLastValue ? nextProps.startWeeks + '' : prevState.startWeeksStringValue,
+			endWeeksStringValue: nextProps.endWeeks !== prevState.endWeeksLastValue ? nextProps.endWeeks + '' : prevState.endWeeksStringValue,
+		}
+	}
 	// shouldComponentUpdate(nextProps: AppCompProps, nextState: AppCompState): boolean {}
 	render() {
 		return (
@@ -94,8 +112,9 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 											type='number'
 											max={this.props.endWeeks}
 											step={`any`}
-											value={this.props.startWeeks}
+											value={this.state.startWeeksStringValue}
 											onChange={this.onStartWeeksChanged}
+											onBlur={this.onStarWeeksBlurred}
 											style={{
 												width: 50,
 											}}
@@ -113,8 +132,9 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 											type='number'
 											min={this.props.startWeeks}
 											step={`any`}
-											value={this.props.endWeeks}
+											value={this.state.endWeeksStringValue}
 											onChange={this.onEndWeeksChanged}
+											onBlur={this.onEndWeeksBlurred}
 											style={{
 												width: 50,
 											}}
@@ -218,11 +238,39 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	}
 
 	onEndWeeksChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-		this.props.setEndWeeks(parseFloat(e.currentTarget.value))
+		this.setState({
+			...this.state,
+			endWeeksStringValue: e.currentTarget.value,
+		})
+		const value = parseFloat(e.currentTarget.value)
+		if (!isNaN(value)) {
+			this.props.setEndWeeks(value)
+		}
 	}
 
 	onStartWeeksChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-		this.props.setStartWeeks(parseFloat(e.currentTarget.value))
+		this.setState({
+			...this.state,
+			startWeeksStringValue: e.currentTarget.value,
+		})
+		const value = parseFloat(e.currentTarget.value)
+		if (!isNaN(value)) {
+			this.props.setStartWeeks(value)
+		}
+	}
+
+	onStarWeeksBlurred = (e: React.FocusEvent<HTMLInputElement>) => {
+		this.setState({
+			...this.state,
+			startWeeksStringValue: this.props.startWeeks + '',
+		})
+	}
+
+	onEndWeeksBlurred = (e: React.FocusEvent<HTMLInputElement>) => {
+		this.setState({
+			...this.state,
+			endWeeksStringValue: this.props.endWeeks + '',
+		})
 	}
 
 	onLocaleChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
