@@ -45,7 +45,7 @@ export const eventsOrderedPastSelector = createSelector(
 	firstFutureEventIndexSelector,
 	(eventsOrdered, firstFutureEventIndex) => {
 		if (firstFutureEventIndex == -1) {
-			return eventsOrdered
+			return eventsOrdered.slice().reverse()
 		}
 		return eventsOrdered.slice(0, firstFutureEventIndex).reverse()
 	},
