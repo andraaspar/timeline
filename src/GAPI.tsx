@@ -1,6 +1,6 @@
 import { makeActionSetSignedIn } from './ActionSetSignedIn';
 import { ICalendar } from './ICalendar';
-import { IEvent, makeIEventFromCalendarEvent } from './IEvent';
+import { IEvent, IEventContext, makeIEventFromCalendarEvent } from './IEvent';
 import { WEEK } from './statics';
 import { store } from './store';
 
@@ -75,18 +75,22 @@ export namespace GAPI {
 
 	export function loadEventsFromCalendar(calendarId: string, events: ReadonlyArray<IEvent> = [], pageToken?: string) {
 		return new Promise<IEvent[]>((resolve, reject) => {
-			const { futureWeeks, pastWeeks } = store.getState()
+			const { endWeeks, startWeeks, locale } = store.getState()
 			gapi.client.calendar.events.list({
 				calendarId,
-				timeMin: (new Date(Date.now() - pastWeeks * WEEK)).toISOString(),
-				timeMax: (new Date(Date.now() + futureWeeks * WEEK)).toISOString(),
+				timeMin: (new Date(Date.now() + startWeeks * WEEK)).toISOString(),
+				timeMax: (new Date(Date.now() + endWeeks * WEEK)).toISOString(),
 				showDeleted: false,
 				singleEvents: true,
 				orderBy: 'startTime',
 				pageToken,
 			})
 				.then(response => {
-					const newEvents = [...events, ...response.result.items.map(_ => makeIEventFromCalendarEvent(calendarId, _))]
+					const options: IEventContext = {
+						calendarId,
+						locale,
+					}
+					const newEvents = [...events, ...response.result.items.map(_ => makeIEventFromCalendarEvent(options, _))]
 					if (response.result.nextPageToken) {
 						resolve(loadEventsFromCalendar(calendarId, newEvents, response.result.nextPageToken))
 					} else {

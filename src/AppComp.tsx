@@ -7,6 +7,7 @@ import { Dispatch } from 'redux';
 import { makeActionInitGapi } from './ActionInitGapi';
 import { makeActionLoadCalendars } from './ActionLoadCalendars';
 import { makeActionSetInterval } from './ActionSetInterval';
+import { makeActionSetLocale } from './ActionSetLocale';
 import { makeActionSignIn } from './ActionSignIn';
 import { makeActionSignOut } from './ActionSignOut';
 import { buttonCss } from './buttonCss';
@@ -15,8 +16,10 @@ import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
 import { inputCss } from './inputCss';
 import { OnMountComp } from './OnMountComp';
+import { RowComp } from './RowComp';
 import { eventsOrderedFutureSelector, eventsOrderedPastSelector } from './selectors';
 import { State } from './State';
+import { INITIAL_END_WEEKS, INITIAL_START_WEEKS } from './statics';
 import { TAction } from './TAction';
 
 export interface AppCompPropsFromStore {
@@ -26,16 +29,19 @@ export interface AppCompPropsFromStore {
 	readonly orderedFutureEvents: ReadonlyArray<IEvent>
 	readonly eventsLoaded: boolean
 	readonly calendarsById: Readonly<TSet<ICalendar>>
-	readonly futureWeeks: number
-	readonly pastWeeks: number
+	readonly endWeeks: number
+	readonly startWeeks: number
+	readonly locale: string
+	readonly now: number
 }
 export interface AppCompPropsDispatch {
 	signIn: () => void
 	signOut: () => void
 	loadCalendars: () => void
 	initGapi: () => void
-	setFutureWeeks: (v: number) => void
-	setPastWeeks: (v: number) => void
+	setEndWeeks: (v: number) => void
+	setStartWeeks: (v: number) => void
+	setLocale: (v: string) => void
 }
 export interface AppCompPropsOwn { }
 export interface AppCompProps extends AppCompPropsOwn, AppCompPropsFromStore, AppCompPropsDispatch { }
@@ -53,82 +59,146 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	// shouldComponentUpdate(nextProps: AppCompProps, nextState: AppCompState): boolean {}
 	render() {
 		return (
-			<>
+			<RowComp inset={5} distance={5} isVertical>
 				{this.props.gapiReady ?
-					<>
-						<div className={buttonBarCss}>
+					<RowComp distance={5} isVertical>
+						<RowComp distance={5}>
 							<button
 								className={buttonCss}
 								type='button'
-								onClick={() => {
-									if (this.props.isSignedIn) {
-										this.props.signOut()
-									} else {
-										this.props.signIn()
-									}
-								}}
+								onClick={this.onSignInClicked}
 							>
 								{this.props.isSignedIn ? 'Sign out' : 'Sign in'}
 							</button>
-							<button
-								className={buttonCss}
-								type='button'
-								onClick={() => {
-									this.props.loadCalendars()
-								}}
-							>
-								{`Reload data`}
-							</button>
-						</div>
-						<div className={inputBarCss}>
-							<div className={inputLabelCss}>
-								{`Future weeks:`}
-							</div>
-							<input
-								className={inputCss}
-								type='number'
-								min={0}
-								step={1}
-								value={this.props.futureWeeks}
-								onChange={this.onFutureWeeksChange}
-							/>
-							<div className={inputLabelCss}>
-								{`Past weeks:`}
-							</div>
-							<input
-								className={inputCss}
-								type='number'
-								min={0}
-								step={1}
-								value={this.props.pastWeeks}
-								onChange={this.onPastWeeksChange}
-							/>
-						</div>
+							{this.props.isSignedIn &&
+								<button
+									className={buttonCss}
+									type='button'
+									title={`Reload events`}
+									onClick={this.onReloadEventsClicked}
+								>
+									{`⟳ 📅`}
+								</button>
+							}
+							{this.props.isSignedIn &&
+								<RowComp distance={5}>
+									<RowComp distance={5}>
+										<div
+											className={inputLabelCss}
+											title={`Start weeks`}
+										>
+											{`S:`}
+										</div>
+										<input
+											className={inputCss}
+											type='number'
+											max={this.props.endWeeks}
+											step={`any`}
+											value={this.props.startWeeks}
+											onChange={this.onStartWeeksChanged}
+											style={{
+												width: 50,
+											}}
+										/>
+									</RowComp>
+									<RowComp distance={5}>
+										<div
+											className={inputLabelCss}
+											title={`End weeks`}
+										>
+											{`E:`}
+										</div>
+										<input
+											className={inputCss}
+											type='number'
+											min={this.props.startWeeks}
+											step={`any`}
+											value={this.props.endWeeks}
+											onChange={this.onEndWeeksChanged}
+											style={{
+												width: 50,
+											}}
+										/>
+									</RowComp>
+								</RowComp>
+							}
+							{this.props.isSignedIn &&
+								<button
+									className={buttonCss}
+									type='button'
+									title={`Home`}
+									onClick={this.onHomeClicked}
+								>
+									{`🏠`}
+								</button>
+							}
+							{this.props.isSignedIn &&
+								<>
+									<input
+										className={inputCss}
+										type='text'
+										value={this.props.locale}
+										onChange={this.onLocaleChanged}
+										list='locales'
+										style={{
+											width: 70,
+										}}
+									/>
+									<datalist id='locales'>
+										<option value='de-DE' />
+										<option value='en-US' />
+										<option value='fr-FR' />
+										<option value='hu-HU' />
+										<option value='zh-CN' />
+									</datalist>
+								</>
+							}
+						</RowComp>
 						{this.props.isSignedIn &&
 							<OnMountComp onMount={this.props.loadCalendars}>
 								<div className={eventsCss}>
 									<div className={eventsPanelCss}>
-										<EventListComp
-											calendarsById={this.props.calendarsById}
-											orderedEvents={this.props.orderedFutureEvents}
-											eventsLoaded={this.props.eventsLoaded}
-										/>
+										<RowComp distance={5} isVertical>
+											<EventListComp
+												calendarsById={this.props.calendarsById}
+												orderedEvents={this.props.orderedFutureEvents}
+												eventsLoaded={this.props.eventsLoaded}
+												now={this.props.now}
+											/>
+											<button
+												className={buttonCss}
+												type='button'
+												onClick={this.onLaterClicked}
+											>
+												{`Later`}
+											</button>
+										</RowComp>
 									</div>
 									<div className={eventsPanelCss}>
-										<EventListComp
-											calendarsById={this.props.calendarsById}
-											orderedEvents={this.props.orderedPastEvents}
-											eventsLoaded={this.props.eventsLoaded}
-										/>
+										<RowComp distance={5} isVertical>
+											<EventListComp
+												calendarsById={this.props.calendarsById}
+												orderedEvents={this.props.orderedPastEvents}
+												eventsLoaded={this.props.eventsLoaded}
+												now={this.props.now}
+											/>
+											<button
+												className={buttonCss}
+												type='button'
+												onClick={this.onEarlierClicked}
+											>
+												{`Earlier`}
+											</button>
+										</RowComp>
 									</div>
 								</div>
 							</OnMountComp>
 						}
-					</>
+					</RowComp>
 					:
 					<div>{`Loading...`}</div>
 				}
-			</>
+			</RowComp>
 		)
 	}
 
@@ -138,13 +208,46 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	// getSnapshotBeforeUpdate(prevProps: AppCompProps, prevState: AppCompState): AppCompSnapshot {}
 	// componentDidUpdate(prevProps: AppCompProps, prevState: AppCompState, snapshot: AppCompSnapshot) {}
 	// componentWillUnmount() {}
-	
-	onFutureWeeksChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		this.props.setFutureWeeks(parseInt(e.currentTarget.value, 10))
+
+	onSignInClicked = () => {
+		if (this.props.isSignedIn) {
+			this.props.signOut()
+		} else {
+			this.props.signIn()
+		}
 	}
-	
-	onPastWeeksChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		this.props.setPastWeeks(parseInt(e.currentTarget.value, 10))
+
+	onEndWeeksChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+		this.props.setEndWeeks(parseFloat(e.currentTarget.value))
+	}
+
+	onStartWeeksChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+		this.props.setStartWeeks(parseFloat(e.currentTarget.value))
+	}
+
+	onLocaleChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+		this.props.setLocale(e.currentTarget.value)
+	}
+
+	onEarlierClicked = () => {
+		const diff = this.props.endWeeks - this.props.startWeeks
+		this.props.setStartWeeks(this.props.startWeeks - diff)
+		this.props.setEndWeeks(this.props.endWeeks - diff)
+	}
+
+	onLaterClicked = () => {
+		const diff = this.props.endWeeks - this.props.startWeeks
+		this.props.setStartWeeks(this.props.startWeeks + diff)
+		this.props.setEndWeeks(this.props.endWeeks + diff)
+	}
+
+	onReloadEventsClicked = () => {
+		this.props.loadCalendars()
+	}
+
+	onHomeClicked = () => {
+		this.props.setStartWeeks(INITIAL_START_WEEKS)
+		this.props.setEndWeeks(INITIAL_END_WEEKS)
 	}
 }
 
@@ -156,21 +259,26 @@ export const AppComp = connect(
 		orderedPastEvents: eventsOrderedPastSelector(state),
 		eventsLoaded: state.eventsLoaded,
 		calendarsById: state.calendarsById,
-		futureWeeks: state.futureWeeks,
-		pastWeeks: state.pastWeeks,
+		endWeeks: state.endWeeks,
+		startWeeks: state.startWeeks,
+		locale: state.locale,
+		now: state.now,
 	}),
 	(dispatch: Dispatch<TAction>, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsDispatch>({
 		signIn: () => dispatch(makeActionSignIn({})),
 		signOut: () => dispatch(makeActionSignOut({})),
 		loadCalendars: () => dispatch(makeActionLoadCalendars({})),
 		initGapi: () => dispatch(makeActionInitGapi({})),
-		setFutureWeeks: weeks => dispatch(makeActionSetInterval({
+		setEndWeeks: weeks => dispatch(makeActionSetInterval({
 			isFuture: true,
 			weeks,
 		})),
-		setPastWeeks: weeks => dispatch(makeActionSetInterval({
+		setStartWeeks: weeks => dispatch(makeActionSetInterval({
 			isFuture: false,
 			weeks,
+		})),
+		setLocale: locale => dispatch(makeActionSetLocale({
+			locale,
 		})),
 	}),
 )(AppCompPure)
@@ -182,29 +290,20 @@ const eventsCss = css({
 
 const eventsPanelCss = css({
 	label: `AppComp-eventsPanel`,
-	margin: 5,
 	flexBasis: '100%',
+	'& + &': {
+		marginLeft: 5,
+	},
 })
 
-const buttonBarCss = css({
-	label: `AppComp-buttonBar`,
-	margin: 5,
-	display: 'grid',
-	gridGap: 5,
-	gridAutoFlow: 'column',
-})
-
-const inputBarCss = css({
-	label: `AppComp-inputBar`,
-	margin: 5,
-	display: 'grid',
-	gridGap: 5,
-	gridTemplateColumns: `repeat(2, min-content [label] auto [value])`,
-})
-
-const inputLabelCss= css({
+const inputLabelCss = css({
 	label: `AppComp-inputLabel`,
 	whiteSpace: 'nowrap',
 	fontSize: `12px`,
-	alignSelf: 'center',
+	fontWeight: 'bold',
+	color: 'gray',
+	borderTop: `1px solid transparent`,
+	borderBottom: `1px solid transparent`,
+	paddingTop: 5,
+	paddingBottom: 5,
 })

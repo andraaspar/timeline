@@ -11,4 +11,6 @@ export enum ActionType {
 	LoadCalendars = 'LoadCalendars',
 	SetNow = 'SetNow',
 	SetInterval = 'SetInterval',
+	SetLocale = 'SetLocale',
+	SetVisibility = 'SetVisibility',
 }

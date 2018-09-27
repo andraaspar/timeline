@@ -3,6 +3,8 @@ import zipObject from 'lodash/zipObject';
 import { ActionType } from './ActionType';
 import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
+import { getLocale } from './LocaleUtil';
+import { INITIAL_END_WEEKS, INITIAL_START_WEEKS } from './statics';
 import { TAction } from './TAction';
 
 export interface State {
@@ -12,8 +14,9 @@ export interface State {
 	readonly gapiReady: boolean
 	readonly isSignedIn: boolean
 	readonly now: number
-	readonly futureWeeks: number
-	readonly pastWeeks: number
+	readonly startWeeks: number
+	readonly endWeeks: number
+	readonly locale: string
 }
 
 function makeState(): State {
@@ -24,8 +27,9 @@ function makeState(): State {
 		gapiReady: false,
 		isSignedIn: false,
 		now: Date.now(),
-		futureWeeks: 2,
-		pastWeeks: 1,
+		startWeeks: INITIAL_START_WEEKS,
+		endWeeks: INITIAL_END_WEEKS,
+		locale: getLocale(),
 	}
 }
 
@@ -66,13 +70,18 @@ export function reducerState(state = makeState(), action: TAction): State {
 			if (action.isFuture) {
 				return {
 					...state,
-					futureWeeks: action.weeks,
+					endWeeks: action.weeks,
 				}
 			} else {
 				return {
 					...state,
-					pastWeeks: action.weeks,
+					startWeeks: action.weeks,
 				}
+			}
+		case ActionType.SetLocale:
+			return {
+				...state,
+				locale: action.locale,
 			}
 	}
 	return state

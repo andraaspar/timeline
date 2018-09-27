@@ -21,18 +21,32 @@ export const eventsOrderedSelector = createSelector(
 	},
 )
 
-export const eventsOrderedFutureSelector = createSelector(
+export const firstFutureEventIndexSelector = createSelector(
 	eventsOrderedSelector,
 	nowSelector,
 	(eventsOrdered, now) => {
-		return eventsOrdered.slice(eventsOrdered.findIndex(event => event.startTimestamp >= now))
+		return eventsOrdered.findIndex(event => event.startTimestamp >= now)
+	},
+)
+
+export const eventsOrderedFutureSelector = createSelector(
+	eventsOrderedSelector,
+	firstFutureEventIndexSelector,
+	(eventsOrdered, firstFutureEventIndex) => {
+		if (firstFutureEventIndex == -1) {
+			return []
+		}
+		return eventsOrdered.slice(firstFutureEventIndex)
 	},
 )
 
 export const eventsOrderedPastSelector = createSelector(
 	eventsOrderedSelector,
-	nowSelector,
-	(eventsOrdered, now) => {
-		return eventsOrdered.slice(0, eventsOrdered.findIndex(event => event.startTimestamp >= now)).reverse()
+	firstFutureEventIndexSelector,
+	(eventsOrdered, firstFutureEventIndex) => {
+		if (firstFutureEventIndex == -1) {
+			return eventsOrdered
+		}
+		return eventsOrdered.slice(0, firstFutureEventIndex).reverse()
 	},
 )

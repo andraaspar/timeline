@@ -41,6 +41,7 @@ export namespace Timer {
 
 	export function listen() {
 		if (isListening) return
+		isListening = true
 		document.addEventListener('visibilitychange', e => {
 			if (shouldTick()) {
 				if (isStarted) startInternal()

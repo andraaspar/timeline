@@ -7,6 +7,7 @@ import './index.css';
 import registerServiceWorker from './registerServiceWorker';
 import { store } from './store';
 import { Timer } from './Timer';
+import { Visibility } from './Visibility';
 
 ReactDOM.render(
 	<Provider store={store}>
@@ -15,5 +16,6 @@ ReactDOM.render(
 	document.getElementById('root')
 )
 registerServiceWorker()
+Visibility.listen()
 Timer.listen()
 Timer.start()
