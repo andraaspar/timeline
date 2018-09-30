@@ -1,3 +1,5 @@
+import { ActionAddErrors } from './ActionAddErrors';
+import { ActionClearErrors } from './ActionClearErrors';
 import { ActionInitGapi } from './ActionInitGapi';
 import { ActionLoadCalendars } from './ActionLoadCalendars';
 import { ActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars';
@@ -10,6 +12,7 @@ import { ActionSetNow } from './ActionSetNow';
 import { ActionSetSignedIn } from './ActionSetSignedIn';
 import { ActionSignIn } from './ActionSignIn';
 import { ActionSignOut } from './ActionSignOut';
+import { ActionUpdateStateLoad } from './ActionUpdateStateLoad';
 
 export type TAction =
 	| ActionSetEvents
@@ -24,3 +27,6 @@ export type TAction =
 	| ActionSetNow
 	| ActionSetInterval
 	| ActionSetLocale
+	| ActionAddErrors
+	| ActionClearErrors
+	| ActionUpdateStateLoad

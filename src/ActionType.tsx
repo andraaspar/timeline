@@ -13,4 +13,7 @@ export enum ActionType {
 	SetInterval = 'SetInterval',
 	SetLocale = 'SetLocale',
 	SetVisibility = 'SetVisibility',
+	AddErrors = 'AddErrors',
+	ClearErrors = 'ClearErrors',
+	UpdateStateLoad = 'UpdateStateLoad',
 }

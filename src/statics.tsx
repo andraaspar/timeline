@@ -16,3 +16,6 @@ export const DATE_OPTIONS = {
 
 export const INITIAL_START_WEEKS = -1
 export const INITIAL_END_WEEKS = 2
+
+export const LOAD_STATE_CALENDARS = 'LOAD_STATE_CALENDARS'
+export const LOAD_STATE_EVENTS = 'LOAD_STATE_EVENTS'

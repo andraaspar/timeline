@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
+import { makeActionClearErrors } from './ActionClearErrors';
 import { makeActionInitGapi } from './ActionInitGapi';
 import { makeActionLoadCalendars } from './ActionLoadCalendars';
 import { makeActionSetInterval } from './ActionSetInterval';
@@ -19,7 +20,8 @@ import { OnMountComp } from './OnMountComp';
 import { RowComp } from './RowComp';
 import { eventsOrderedFutureSelector, eventsOrderedPastSelector } from './selectors';
 import { State } from './State';
-import { INITIAL_END_WEEKS, INITIAL_START_WEEKS } from './statics';
+import { StateLoad } from './StateLoad';
+import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS } from './statics';
 import { TAction } from './TAction';
 
 export interface AppCompPropsFromStore {
@@ -27,12 +29,14 @@ export interface AppCompPropsFromStore {
 	readonly isSignedIn: boolean
 	readonly orderedPastEvents: ReadonlyArray<IEvent>
 	readonly orderedFutureEvents: ReadonlyArray<IEvent>
-	readonly eventsLoaded: boolean
+	readonly calendarsLoadState: StateLoad
+	readonly eventsLoadState: StateLoad
 	readonly calendarsById: Readonly<TSet<ICalendar>>
 	readonly endWeeks: number
 	readonly startWeeks: number
 	readonly locale: string
 	readonly now: number
+	readonly errors: ReadonlyArray<string>
 }
 export interface AppCompPropsDispatch {
 	signIn: () => void
@@ -42,6 +46,7 @@ export interface AppCompPropsDispatch {
 	setEndWeeks: (v: number) => void
 	setStartWeeks: (v: number) => void
 	setLocale: (v: string) => void
+	clearErrors: () => void
 }
 export interface AppCompPropsOwn { }
 export interface AppCompProps extends AppCompPropsOwn, AppCompPropsFromStore, AppCompPropsDispatch { }
@@ -52,8 +57,10 @@ export interface AppCompState {
 	endWeeksStringValue: string
 }
 
+const displayName = `AppComp`
+
 class AppCompPure extends Component<AppCompProps, AppCompState> {
-	static displayName = __filename
+	static displayName = displayName
 
 	constructor(props: AppCompProps) {
 		super(props)
@@ -76,8 +83,31 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	}
 	// shouldComponentUpdate(nextProps: AppCompProps, nextState: AppCompState): boolean {}
 	render() {
+		// console.log(`--- AppComp redraw ---`)
 		return (
 			<RowComp inset={5} distance={5} isVertical>
+				{this.props.errors.length > 0 &&
+					<div className={errorsCss}>
+						<div className={errorsInnerCss}>
+							<RowComp distance={5} isVertical>
+								{this.props.errors.map((e, index) =>
+									<div key={index} className={errorCss}>
+										{e}
+									</div>
+								)}
+							</RowComp>
+						</div>
+					</div>
+				}
+				{this.props.errors.length > 0 &&
+					<button
+						className={buttonCss}
+						type='button'
+						onClick={this.onClearErrorsClicked}
+					>
+						{`Clear errors`}
+					</button>
+				}
 				{this.props.gapiReady ?
 					<RowComp distance={5} isVertical>
 						<RowComp distance={5}>
@@ -176,47 +206,59 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 						</RowComp>
 						{this.props.isSignedIn &&
 							<OnMountComp onMount={this.props.loadCalendars}>
-								<div className={eventsCss}>
-									<div className={eventsPanelCss}>
-										<RowComp distance={5} isVertical>
-											<EventListComp
-												calendarsById={this.props.calendarsById}
-												orderedEvents={this.props.orderedFutureEvents}
-												eventsLoaded={this.props.eventsLoaded}
-												now={this.props.now}
-											/>
-											<button
-												className={buttonCss}
-												type='button'
-												onClick={this.onLaterClicked}
-											>
-												{`Later`}
-											</button>
-										</RowComp>
+								{this.props.calendarsLoadState.isLoading ?
+									<div>
+										{`Loading calendars...`}
 									</div>
-									<div className={eventsPanelCss}>
-										<RowComp distance={5} isVertical>
-											<EventListComp
-												calendarsById={this.props.calendarsById}
-												orderedEvents={this.props.orderedPastEvents}
-												eventsLoaded={this.props.eventsLoaded}
-												now={this.props.now}
-											/>
-											<button
-												className={buttonCss}
-												type='button'
-												onClick={this.onEarlierClicked}
-											>
-												{`Earlier`}
-											</button>
-										</RowComp>
-									</div>
-								</div>
+									:
+									(this.props.calendarsLoadState.hasError ?
+										<div>
+											{`Error loading calendars.`}
+										</div>
+										:
+										<div className={eventsCss}>
+											<div className={eventsPanelCss}>
+												<RowComp distance={5} isVertical>
+													<EventListComp
+														calendarsById={this.props.calendarsById}
+														orderedEvents={this.props.orderedFutureEvents}
+														eventsLoadState={this.props.eventsLoadState}
+														now={this.props.now}
+													/>
+													<button
+														className={buttonCss}
+														type='button'
+														onClick={this.onLaterClicked}
+													>
+														{`Later`}
+													</button>
+												</RowComp>
+											</div>
+											<div className={eventsPanelCss}>
+												<RowComp distance={5} isVertical>
+													<EventListComp
+														calendarsById={this.props.calendarsById}
+														orderedEvents={this.props.orderedPastEvents}
+														eventsLoadState={this.props.eventsLoadState}
+														now={this.props.now}
+													/>
+													<button
+														className={buttonCss}
+														type='button'
+														onClick={this.onEarlierClicked}
+													>
+														{`Earlier`}
+													</button>
+												</RowComp>
+											</div>
+										</div>
+									)
+								}
 							</OnMountComp>
 						}
 					</RowComp>
 					:
-					<div>{`Loading...`}</div>
+					<div>{`Loading Google API...`}</div>
 				}
 			</RowComp>
 		)
@@ -297,6 +339,10 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 		this.props.setStartWeeks(INITIAL_START_WEEKS)
 		this.props.setEndWeeks(INITIAL_END_WEEKS)
 	}
+
+	onClearErrorsClicked = () => {
+		this.props.clearErrors()
+	}
 }
 
 export const AppComp = connect(
@@ -305,12 +351,14 @@ export const AppComp = connect(
 		isSignedIn: state.isSignedIn,
 		orderedFutureEvents: eventsOrderedFutureSelector(state),
 		orderedPastEvents: eventsOrderedPastSelector(state),
-		eventsLoaded: state.eventsLoaded,
+		eventsLoadState: state.loadStatesById[LOAD_STATE_EVENTS],
+		calendarsLoadState: state.loadStatesById[LOAD_STATE_CALENDARS],
 		calendarsById: state.calendarsById,
 		endWeeks: state.endWeeks,
 		startWeeks: state.startWeeks,
 		locale: state.locale,
 		now: state.now,
+		errors: state.errors,
 	}),
 	(dispatch: Dispatch<TAction>, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsDispatch>({
 		signIn: () => dispatch(makeActionSignIn({})),
@@ -328,16 +376,17 @@ export const AppComp = connect(
 		setLocale: locale => dispatch(makeActionSetLocale({
 			locale,
 		})),
+		clearErrors: () => dispatch(makeActionClearErrors({})),
 	}),
 )(AppCompPure)
 
 const eventsCss = css({
-	label: `AppComp-events`,
+	label: `${displayName}-events`,
 	display: 'flex',
 })
 
 const eventsPanelCss = css({
-	label: `AppComp-eventsPanel`,
+	label: `${displayName}-eventsPanel`,
 	flexBasis: '100%',
 	'& + &': {
 		marginLeft: 5,
@@ -345,7 +394,7 @@ const eventsPanelCss = css({
 })
 
 const inputLabelCss = css({
-	label: `AppComp-inputLabel`,
+	label: `${displayName}-inputLabel`,
 	whiteSpace: 'nowrap',
 	fontSize: `12px`,
 	fontWeight: 'bold',
@@ -354,4 +403,36 @@ const inputLabelCss = css({
 	borderBottom: `1px solid transparent`,
 	paddingTop: 5,
 	paddingBottom: 5,
+})
+
+const errorsCss = css({
+	label: `${displayName}-errors`,
+	background: `#eee`,
+	position: 'relative',
+	'&::after': {
+		content: '""',
+		position: 'absolute',
+		top: 0,
+		bottom: 0,
+		left: 0,
+		right: 0,
+		pointerEvents: 'none',
+		boxShadow: `inset 0 0 3px 1px rgba(0, 0, 0, .2)`,
+	},
+})
+
+const errorsInnerCss = css({
+	label: `${displayName}-errorsInner`,
+	overflow: 'auto',
+	maxHeight: 200,
+	padding: 5,
+})
+
+const errorCss = css({
+	label: `${displayName}-error`,
+	border: `1px solid red`,
+	color: `red`,
+	background: `white`,
+	padding: 5,
+	borderRadius: 3,
 })

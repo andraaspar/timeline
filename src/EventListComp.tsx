@@ -5,11 +5,12 @@ import { EventListItemComp } from './EventListItemComp';
 import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
 import { RowComp } from './RowComp';
+import { StateLoad } from './StateLoad';
 
 export interface EventListCompProps {
 	readonly calendarsById: Readonly<TSet<ICalendar>>
 	readonly orderedEvents: ReadonlyArray<IEvent>
-	readonly eventsLoaded: boolean
+	readonly eventsLoadState: StateLoad
 	readonly now: number
 }
 export interface EventListCompState { }
@@ -26,28 +27,34 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 	// getDerivedStateFromProps(nextProps: EventListCompProps, prevState: EventListCompState): EventListCompState | null {}
 	// shouldComponentUpdate(nextProps: EventListCompProps, nextState: EventListCompState): boolean {}
 	render() {
-		return (this.props.eventsLoaded ?
-			(this.props.orderedEvents.length ?
-				<RowComp distance={5} isVertical>
-					{this.props.orderedEvents.map((event, index, events) =>
-						<EventListItemComp
-							key={event.id}
-							event={event}
-							calendar={this.props.calendarsById[event.calendarId]}
-							now={this.props.now}
-							nextEvent={events[index + 1]}
-						/>
-					)}
-				</RowComp>
-				:
-				<div>
-					<em>{`No events.`}</em>
-				</div>
-			)
-			:
+		return (this.props.eventsLoadState.isLoading ?
 			<div>
-				{`Loading...`}
+				{`Loading events...`}
 			</div>
+			:
+			(this.props.eventsLoadState.hasError ?
+				<div>
+					<em>{`Error loading events.`}</em>
+				</div>
+				:
+				(this.props.orderedEvents.length ?
+					<RowComp distance={5} isVertical>
+						{this.props.orderedEvents.map((event, index, events) =>
+							<EventListItemComp
+								key={event.id}
+								event={event}
+								calendar={this.props.calendarsById[event.calendarId]}
+								now={this.props.now}
+								nextEvent={events[index + 1]}
+							/>
+						)}
+					</RowComp>
+					:
+					<div>
+						<em>{`No events.`}</em>
+					</div>
+				)
+			)
 		)
 	}
 

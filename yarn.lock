@@ -7621,6 +7621,10 @@ widest-line@^2.0.0:
   dependencies:
     string-width "^2.1.1"
 
+window-onerror-handler@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/window-onerror-handler/-/window-onerror-handler-0.2.0.tgz#dd85d8829a162d01a4fe7db4b3484bac3411e82e"
+
 window-size@0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/window-size/-/window-size-0.1.0.tgz#5438cd2ea93b202efa3a19fe8887aee7c94f9c9d"
