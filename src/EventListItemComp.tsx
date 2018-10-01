@@ -57,7 +57,7 @@ export class EventListItemComp extends Component<EventListItemCompProps, EventLi
 						{`S`}
 					</div>
 					<div className={metaValueCss}>
-						<div className={startCss}>
+						<div className={startEndCss}>
 							{this.getTimeDifference(this.props.now, this.props.event.startTimestamp)}
 						</div>
 						<div className={dateCss}>
@@ -76,7 +76,9 @@ export class EventListItemComp extends Component<EventListItemCompProps, EventLi
 								{`E`}
 							</div>
 							<div className={metaValueCss}>
-								<div>{this.getTimeDifference(this.props.now, this.props.event.endTimestamp)}</div>
+								<div className={startEndCss}>
+									{this.getTimeDifference(this.props.now, this.props.event.endTimestamp)}
+								</div>
 								<div className={dateCss}>
 									{this.props.event.endString}
 								</div>
@@ -132,8 +134,8 @@ export class EventListItemComp extends Component<EventListItemCompProps, EventLi
 			weeks && `${weeks}w`,
 			days && `${days}d`,
 			`${hours}h`,
-			`${mins}m`,
-			`${secs}s`,
+			`${('0' + mins).slice(-2)}m`,
+			!weeks && !days && `${('0' + secs).slice(-2)}s`,
 		].filter(Boolean).join(' ')
 	}
 
@@ -254,8 +256,8 @@ const metaButtonCss = cx(
 	}),
 )
 
-const startCss = css({
-	label: `${EventListItemComp.displayName}-start`,
+const startEndCss = css({
+	label: `${EventListItemComp.displayName}-startEnd`,
 	fontWeight: 'bold',
 })
 
