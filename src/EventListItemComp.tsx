@@ -39,7 +39,15 @@ export class EventListItemComp extends Component<EventListItemCompProps, EventLi
 						color: this.props.calendar.foregroundColor,
 					}}
 				>
-					{`@`}
+					{this.props.event.startTimestamp <= this.props.now ?
+						(this.props.event.endTimestamp > this.props.now ?
+							`►`
+							:
+							`-`
+						)
+						:
+						`+`
+					}
 				</div>
 				<div className={titleCss}>
 					{this.props.event.summary}
@@ -191,6 +199,8 @@ const colorCss = css({
 	borderColor: 'rgba(0, 0, 0, .2)',
 	borderRadius: `3px 0 3px 0`,
 	padding: 3,
+	minWidth: 24,
+	textAlign: 'center',
 })
 
 const titleCss = css({
