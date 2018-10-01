@@ -1,7 +1,9 @@
+import { get } from 'illa/FunctionUtil';
 import { delay } from 'redux-saga';
-import { fork, put, take, takeLatest } from 'redux-saga/effects';
+import { fork, put, select, take, takeLatest } from 'redux-saga/effects';
 import { makeActionAddErrors } from './ActionAddErrors';
-import { makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars';
+import { ActionLoadCalendars } from './ActionLoadCalendars';
+import { ActionLoadEventsFromAllCalendars, makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars';
 import { makeActionSetCalendars } from './ActionSetCalendars';
 import { makeActionSetEvents } from './ActionSetEvents';
 import { makeActionSetGapiReady } from './ActionSetGapiReady';
@@ -14,6 +16,7 @@ import { GAPI } from './GAPI';
 import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
 import { saveLocale } from './LocaleUtil';
+import { gotEventsSelector } from './selectors';
 import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, MINUTE, SECOND } from './statics';
 
 export function* rootSaga() {
@@ -63,7 +66,7 @@ function* signOut() {
 	yield GAPI.signOut()
 }
 
-function* loadEventsFromAllCalendars() {
+function* loadEventsFromAllCalendars(action: ActionLoadEventsFromAllCalendars) {
 	try {
 		yield* loadStart(LOAD_STATE_EVENTS)
 		const events: IEvent[] = yield GAPI.loadEventsFromAllCalendars()
@@ -73,11 +76,15 @@ function* loadEventsFromAllCalendars() {
 		yield* loadSuccess(LOAD_STATE_EVENTS)
 	} catch (e) {
 		yield* showError(e)
-		yield* loadError(LOAD_STATE_EVENTS)
+		if (action.restoreOldOnFailure) {
+			yield* loadSuccess(LOAD_STATE_EVENTS)
+		} else {
+			yield* loadError(LOAD_STATE_EVENTS)
+		}
 	}
 }
 
-function* loadCalendars() {
+function* loadCalendars(action: ActionLoadCalendars) {
 	try {
 		yield* loadStart(LOAD_STATE_CALENDARS)
 		const calendars: ICalendar[] = yield GAPI.loadCalendars()
@@ -85,27 +92,41 @@ function* loadCalendars() {
 			calendars,
 		}))
 		yield* loadSuccess(LOAD_STATE_CALENDARS)
-		yield put(makeActionLoadEventsFromAllCalendars({}))
+		yield put(makeActionLoadEventsFromAllCalendars({
+			restoreOldOnFailure: false,
+		}))
 	} catch (e) {
 		yield* showError(e)
-		yield* loadError(LOAD_STATE_CALENDARS)
+		if (action.restoreOldOnFailure) {
+			yield* loadSuccess(LOAD_STATE_CALENDARS)
+		} else {
+			yield* loadError(LOAD_STATE_CALENDARS)
+		}
 	}
 }
 
 function* setInterval_() {
 	yield delay(600)
-	yield put(makeActionLoadEventsFromAllCalendars({}))
+	yield put(makeActionLoadEventsFromAllCalendars({
+		restoreOldOnFailure: false,
+	}))
 }
 
 function* setLocale(action: ActionSetLocale) {
 	yield delay(3000)
 	yield saveLocale(action.locale)
-	yield put(makeActionLoadEventsFromAllCalendars({}))
+	const gotEvents: boolean = yield select(gotEventsSelector)
+	yield put(makeActionLoadEventsFromAllCalendars({
+		restoreOldOnFailure: gotEvents,
+	}))
 }
 
 function* setVisibility(action: ActionSetVisibility) {
 	if (action.visible && action.hideTime && action.showTime - action.hideTime > 5 * MINUTE) {
-		yield put(makeActionLoadEventsFromAllCalendars({}))
+		const gotEvents: boolean = yield select(gotEventsSelector)
+		yield put(makeActionLoadEventsFromAllCalendars({
+			restoreOldOnFailure: gotEvents,
+		}))
 	}
 }
 
@@ -113,7 +134,7 @@ function* showError(e: any) {
 	console.error(e)
 	let errorAsString = e + ''
 	if (errorAsString === {} + '') {
-		errorAsString = JSON.stringify(errorAsString, undefined, 2)
+		errorAsString = get(() => e.result.error.message, () => JSON.stringify(e, undefined, 2))
 	}
 	yield put(makeActionAddErrors({
 		errors: [errorAsString],

@@ -50,3 +50,8 @@ export const eventsOrderedPastSelector = createSelector(
 		return eventsOrdered.slice(0, firstFutureEventIndex).reverse()
 	},
 )
+
+export const gotEventsSelector = createSelector(
+	eventsByIdSelector,
+	eventsById => Object.keys(eventsById).length > 0,
+)

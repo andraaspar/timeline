@@ -18,7 +18,7 @@ import { IEvent } from './IEvent';
 import { inputCss } from './inputCss';
 import { OnMountComp } from './OnMountComp';
 import { RowComp } from './RowComp';
-import { eventsOrderedFutureSelector, eventsOrderedPastSelector } from './selectors';
+import { eventsOrderedFutureSelector, eventsOrderedPastSelector, gotEventsSelector } from './selectors';
 import { State } from './State';
 import { StateLoad } from './StateLoad';
 import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS } from './statics';
@@ -37,11 +37,12 @@ export interface AppCompPropsFromStore {
 	readonly locale: string
 	readonly now: number
 	readonly errors: ReadonlyArray<string>
+	readonly gotEvents: boolean
 }
 export interface AppCompPropsDispatch {
 	signIn: () => void
 	signOut: () => void
-	loadCalendars: () => void
+	loadCalendars: (restoreOldOnFailure: boolean) => void
 	initGapi: () => void
 	setEndWeeks: (v: number) => void
 	setStartWeeks: (v: number) => void
@@ -205,7 +206,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 							}
 						</RowComp>
 						{this.props.isSignedIn &&
-							<OnMountComp onMount={this.props.loadCalendars}>
+							<OnMountComp onMount={this.onEventListsMounted}>
 								{this.props.calendarsLoadState.isLoading ?
 									<div>
 										{`Loading calendars...`}
@@ -270,6 +271,10 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	// getSnapshotBeforeUpdate(prevProps: AppCompProps, prevState: AppCompState): AppCompSnapshot {}
 	// componentDidUpdate(prevProps: AppCompProps, prevState: AppCompState, snapshot: AppCompSnapshot) {}
 	// componentWillUnmount() {}
+	
+	onEventListsMounted = () => {
+		this.props.loadCalendars(this.props.gotEvents)
+	}
 
 	onSignInClicked = () => {
 		if (this.props.isSignedIn) {
@@ -332,7 +337,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	}
 
 	onReloadEventsClicked = () => {
-		this.props.loadCalendars()
+		this.props.loadCalendars(this.props.gotEvents)
 	}
 
 	onHomeClicked = () => {
@@ -359,11 +364,14 @@ export const AppComp = connect(
 		locale: state.locale,
 		now: state.now,
 		errors: state.errors,
+		gotEvents: gotEventsSelector(state),
 	}),
 	(dispatch: Dispatch<TAction>, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsDispatch>({
 		signIn: () => dispatch(makeActionSignIn({})),
 		signOut: () => dispatch(makeActionSignOut({})),
-		loadCalendars: () => dispatch(makeActionLoadCalendars({})),
+		loadCalendars: restoreOldOnFailure => dispatch(makeActionLoadCalendars({
+			restoreOldOnFailure,
+		})),
 		initGapi: () => dispatch(makeActionInitGapi({})),
 		setEndWeeks: weeks => dispatch(makeActionSetInterval({
 			isFuture: true,

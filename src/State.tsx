@@ -51,7 +51,7 @@ export function reducerState(state = makeState(), action: TAction): State {
 		case ActionType.LoadCalendars:
 			return {
 				...state,
-				calendarsById: {},
+				calendarsById: action.restoreOldOnFailure ? state.calendarsById : {},
 			}
 		case ActionType.SetCalendars:
 			return {
@@ -61,7 +61,7 @@ export function reducerState(state = makeState(), action: TAction): State {
 		case ActionType.LoadEventsFromAllCalendars:
 			return {
 				...state,
-				eventsById: {},
+				eventsById: action.restoreOldOnFailure ? state.eventsById : {},
 			}
 		case ActionType.SetEvents:
 			return {

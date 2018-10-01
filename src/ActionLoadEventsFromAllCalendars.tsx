@@ -3,6 +3,7 @@ import { ActionType } from './ActionType';
 
 export interface ActionLoadEventsFromAllCalendars {
 	readonly type: ActionType.LoadEventsFromAllCalendars
+	readonly restoreOldOnFailure: boolean
 }
 
 export function makeActionLoadEventsFromAllCalendars(o: TOmit<ActionLoadEventsFromAllCalendars, 'type'>): ActionLoadEventsFromAllCalendars {
