@@ -111,8 +111,12 @@ function* setVisibility(action: ActionSetVisibility) {
 
 function* showError(e: any) {
 	console.error(e)
+	let errorAsString = e + ''
+	if (errorAsString === {} + '') {
+		errorAsString = JSON.stringify(errorAsString, undefined, 2)
+	}
 	yield put(makeActionAddErrors({
-		errors: [e + ''],
+		errors: [errorAsString],
 	}))
 }
 

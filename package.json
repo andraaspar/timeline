@@ -1,6 +1,6 @@
 {
   "name": "timeline",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "homepage": "https://andraaspar.github.io/timeline",
   "private": true,
   "dependencies": {
@@ -31,8 +31,8 @@
     "analyze": "source-map-explorer build/static/js/main.*",
     "predeploy": "yarn build",
     "deploy": "gh-pages -d build",
-    "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
+    "start": "yarn && react-scripts-ts start",
+    "build": "yarn && react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject"
   },
