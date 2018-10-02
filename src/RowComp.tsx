@@ -56,8 +56,9 @@ export class RowComp extends Component<RowCompProps, RowCompState/* , RowCompSna
 			<div className={outerClass}>
 				<div className={innerClass}>
 					{Children.map(this.props.children, child =>
+						child &&
 						<div
-							key={child ? (child as ReactElement<any>).key : undefined}
+							key={(child as ReactElement<any>).key}
 							className={itemClass}
 						>
 							{child}

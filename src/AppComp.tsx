@@ -443,4 +443,5 @@ const errorCss = css({
 	background: `white`,
 	padding: 5,
 	borderRadius: 3,
+	whiteSpace: 'pre-wrap',
 })
