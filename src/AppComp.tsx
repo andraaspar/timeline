@@ -12,6 +12,7 @@ import { makeActionSetLocale } from './ActionSetLocale';
 import { makeActionSignIn } from './ActionSignIn';
 import { makeActionSignOut } from './ActionSignOut';
 import { buttonCss } from './buttonCss';
+import { CompEventInsert } from './CompEventInsert';
 import { EventListComp } from './EventListComp';
 import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
@@ -217,42 +218,45 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 											{`Error loading calendars.`}
 										</div>
 										:
-										<div className={eventsCss}>
-											<div className={eventsPanelCss}>
-												<RowComp distance={5} isVertical>
-													<EventListComp
-														calendarsById={this.props.calendarsById}
-														orderedEvents={this.props.orderedFutureEvents}
-														eventsLoadState={this.props.eventsLoadState}
-														now={this.props.now}
-													/>
-													<button
-														className={buttonCss}
-														type='button'
-														onClick={this.onLaterClicked}
-													>
-														{`Later`}
-													</button>
-												</RowComp>
+										<RowComp distance={5} isVertical>
+											<CompEventInsert />
+											<div className={eventsCss}>
+												<div className={eventsPanelCss}>
+													<RowComp distance={5} isVertical>
+														<EventListComp
+															calendarsById={this.props.calendarsById}
+															orderedEvents={this.props.orderedFutureEvents}
+															eventsLoadState={this.props.eventsLoadState}
+															now={this.props.now}
+														/>
+														<button
+															className={buttonCss}
+															type='button'
+															onClick={this.onLaterClicked}
+														>
+															{`Later`}
+														</button>
+													</RowComp>
+												</div>
+												<div className={eventsPanelCss}>
+													<RowComp distance={5} isVertical>
+														<EventListComp
+															calendarsById={this.props.calendarsById}
+															orderedEvents={this.props.orderedPastEvents}
+															eventsLoadState={this.props.eventsLoadState}
+															now={this.props.now}
+														/>
+														<button
+															className={buttonCss}
+															type='button'
+															onClick={this.onEarlierClicked}
+														>
+															{`Earlier`}
+														</button>
+													</RowComp>
+												</div>
 											</div>
-											<div className={eventsPanelCss}>
-												<RowComp distance={5} isVertical>
-													<EventListComp
-														calendarsById={this.props.calendarsById}
-														orderedEvents={this.props.orderedPastEvents}
-														eventsLoadState={this.props.eventsLoadState}
-														now={this.props.now}
-													/>
-													<button
-														className={buttonCss}
-														type='button'
-														onClick={this.onEarlierClicked}
-													>
-														{`Earlier`}
-													</button>
-												</RowComp>
-											</div>
-										</div>
+										</RowComp>
 									)
 								}
 							</OnMountComp>
@@ -271,7 +275,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	// getSnapshotBeforeUpdate(prevProps: AppCompProps, prevState: AppCompState): AppCompSnapshot {}
 	// componentDidUpdate(prevProps: AppCompProps, prevState: AppCompState, snapshot: AppCompSnapshot) {}
 	// componentWillUnmount() {}
-	
+
 	onEventListsMounted = () => {
 		this.props.loadCalendars(this.props.gotEvents)
 	}

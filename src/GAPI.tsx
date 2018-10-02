@@ -25,7 +25,7 @@ export namespace GAPI {
 				apiKey: 'AIzaSyDgRx5gSwle0rziKByBbwzWo3xlntL95BQ',
 				clientId: '70722773944-snk5oonsveejagkeuf1v6p92c05f1e01.apps.googleusercontent.com',
 				discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
-				scope: 'https://www.googleapis.com/auth/calendar.readonly',
+				scope: 'https://www.googleapis.com/auth/calendar',
 			})
 				.then(() => {
 					resolve()
@@ -116,6 +116,21 @@ export namespace GAPI {
 				.then(loadedEvents => {
 					const events = ([] as IEvent[]).concat(...loadedEvents)
 					resolve(events)
+				})
+				.catch(e => {
+					reject(e)
+				})
+		})
+	}
+	
+	export function insertEvent(calendarId: string, event: Readonly<gapi.client.calendar.EventInput>) {
+		return new Promise<void>((resolve, reject) => {
+			gapi.client.calendar.events.insert({
+				calendarId,
+				resource: event,
+			})
+				.then(() => {
+					resolve()
 				})
 				.catch(e => {
 					reject(e)

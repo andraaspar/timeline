@@ -1,3 +1,4 @@
+import { Settings } from 'luxon';
 import 'normalize.css/normalize.css';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -10,6 +11,7 @@ import { store } from './store';
 import { Timer } from './Timer';
 import { Visibility } from './Visibility';
 
+Settings.throwOnInvalid = true
 ReactDOM.render(
 	<Provider store={store}>
 		<AppComp />

@@ -16,4 +16,5 @@ export enum ActionType {
 	AddErrors = 'AddErrors',
 	ClearErrors = 'ClearErrors',
 	UpdateStateLoad = 'UpdateStateLoad',
+	RequestEventInsert = 'RequestEventInsert',
 }

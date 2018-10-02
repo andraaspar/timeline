@@ -5,7 +5,7 @@ import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
 import { getLocale } from './LocaleUtil';
 import { StateLoad } from './StateLoad';
-import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS } from './statics';
+import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT } from './statics';
 import { TAction } from './TAction';
 
 export interface State {
@@ -25,6 +25,7 @@ function makeState(): State {
 	const allLoadStates = [
 		LOAD_STATE_CALENDARS,
 		LOAD_STATE_EVENTS,
+		LOAD_STATE_INSERT_EVENT,
 	]
 	return {
 		loadStatesById: {

@@ -1,9 +1,9 @@
-import { get } from 'illa/FunctionUtil';
 import { delay } from 'redux-saga';
 import { fork, put, select, take, takeLatest } from 'redux-saga/effects';
 import { makeActionAddErrors } from './ActionAddErrors';
 import { ActionLoadCalendars } from './ActionLoadCalendars';
 import { ActionLoadEventsFromAllCalendars, makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars';
+import { ActionRequestEventInsert } from './ActionRequestEventInsert';
 import { makeActionSetCalendars } from './ActionSetCalendars';
 import { makeActionSetEvents } from './ActionSetEvents';
 import { makeActionSetGapiReady } from './ActionSetGapiReady';
@@ -17,7 +17,7 @@ import { ICalendar } from './ICalendar';
 import { IEvent } from './IEvent';
 import { saveLocale } from './LocaleUtil';
 import { gotEventsSelector } from './selectors';
-import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, MINUTE, SECOND } from './statics';
+import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT, MINUTE, SECOND } from './statics';
 
 export function* rootSaga() {
 	yield fork(gapiSaga)
@@ -50,6 +50,7 @@ function* gapiSaga() {
 		yield takeLatest(ActionType.SetInterval, setInterval_)
 		yield takeLatest(ActionType.SetLocale, setLocale)
 		yield takeLatest(ActionType.SetVisibility, setVisibility)
+		yield takeLatest(ActionType.RequestEventInsert, requestEventInsert)
 		yield put(makeActionSetGapiReady({
 			flag: true,
 		}))
@@ -130,11 +131,26 @@ function* setVisibility(action: ActionSetVisibility) {
 	}
 }
 
+function* requestEventInsert(action: ActionRequestEventInsert) {
+	yield* loadStart(LOAD_STATE_INSERT_EVENT)
+	try {
+		yield GAPI.insertEvent(action.calendarId, action.event)
+		yield* loadSuccess(LOAD_STATE_INSERT_EVENT)
+		yield put(makeActionLoadEventsFromAllCalendars({
+			restoreOldOnFailure: false,
+		}))
+	} catch (e) {
+		yield* showError(e)
+		yield* loadError(LOAD_STATE_INSERT_EVENT)
+	}
+}
+
 function* showError(e: any) {
 	console.error(e)
 	let errorAsString = e + ''
 	if (errorAsString === {} + '') {
-		errorAsString = get(() => e.result.error.message, () => JSON.stringify(e, undefined, 2))
+		// errorAsString = get(() => e.result.error.message, () => JSON.stringify(e, undefined, 2))
+		errorAsString = JSON.stringify(e, undefined, 2)
 	}
 	yield put(makeActionAddErrors({
 		errors: [errorAsString],
