@@ -1,6 +1,6 @@
 {
   "name": "timeline",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "homepage": "https://andraaspar.github.io/timeline",
   "private": true,
   "dependencies": {

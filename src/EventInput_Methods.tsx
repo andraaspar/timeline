@@ -37,24 +37,26 @@ function parseDate(timeZone: string, s: string, fallbackDt = DateTime.local()) {
 	const addOrSubtract = r[2]
 	const range = r[3]
 	const options: DateTimeOptions = timeZone ? { zone: timeZone } : undefined
-	if (date && dateNoYearRe.test(date)) {
-		let newDate = `${fallbackDt.toFormat('yyyy')}-${date}`
-		if (DateTime.fromSQL(newDate, options) < fallbackDt) {
-			newDate = `${fallbackDt.plus({ years: 1 }).toFormat('yyyy')}-${date}`
+	if (date) {
+		if (dateNoYearRe.test(date)) {
+			let newDate = `${fallbackDt.toFormat('yyyy')}-${date}`
+			if (DateTime.fromSQL(newDate, options) < fallbackDt) {
+				newDate = `${fallbackDt.plus({ years: 1 }).toFormat('yyyy')}-${date}`
+			}
+			date = newDate
+		} else if (dateNoYearNoMonthRe.test(date)) {
+			let newDate = `${fallbackDt.toFormat('yyyy')}-${fallbackDt.toFormat('MM')}-${date}`
+			if (DateTime.fromSQL(newDate, options) < fallbackDt) {
+				newDate = `${fallbackDt.plus({ months: 1 }).toFormat('yyyy')}-${fallbackDt.plus({ months: 1 }).toFormat('MM')}-${date}`
+			}
+			date = newDate
+		} else if (timeNoDateRe.test(date)) {
+			let newDate = `${fallbackDt.toISODate()} ${date}`
+			if (DateTime.fromSQL(newDate, options) < fallbackDt) {
+				newDate = `${fallbackDt.plus({ days: 1 }).toISODate()} ${date}`
+			}
+			date = newDate
 		}
-		date = newDate
-	} else if (dateNoYearNoMonthRe.test(date)) {
-		let newDate = `${fallbackDt.toFormat('yyyy')}-${fallbackDt.toFormat('MM')}-${date}`
-		if (DateTime.fromSQL(newDate, options) < fallbackDt) {
-			newDate = `${fallbackDt.plus({ months: 1 }).toFormat('yyyy')}-${fallbackDt.plus({ months: 1 }).toFormat('MM')}-${date}`
-		}
-		date = newDate
-	} else if (timeNoDateRe.test(date)) {
-		let newDate = `${fallbackDt.toISODate()} ${date}`
-		if (DateTime.fromSQL(newDate, options) < fallbackDt) {
-			newDate = `${fallbackDt.plus({ days: 1 }).toISODate()} ${date}`
-		}
-		date = newDate
 	}
 	const dt = date ? DateTime.fromSQL(date, options) : fallbackDt
 	if (addOrSubtract === '+') {

@@ -113,6 +113,9 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 				{this.props.gapiReady ?
 					<RowComp distance={5} isVertical>
 						<RowComp distance={5}>
+							<div className={inputLabelCss}>
+								{process.env.REACT_APP_VERSION}
+							</div>
 							<button
 								className={buttonCss}
 								type='button'
