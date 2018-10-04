@@ -1,37 +1,53 @@
 import { css, cx } from 'emotion'
 import { get } from 'illa/FunctionUtil'
+import { DateTime } from 'luxon'
 import React, { Component } from 'react'
 import { buttonCss } from './buttonCss'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
-import { DAY, HOUR, MINUTE, SECOND, WEEK } from './statics'
+import { DATE_OPTIONS, DAY, HOUR, MINUTE, SECOND, WEEK } from './statics'
 
 export interface EventListItemCompProps {
 	readonly calendar: ICalendar
 	readonly event: IEvent
 	readonly nextEvent: IEvent | null
 	readonly now: number
+	readonly alwaysExpanded?: boolean
+	readonly locale: string
 }
 export interface EventListItemCompState {
-	readonly showDetails: boolean
+	readonly expanded: boolean
+	readonly alwaysExpanded: boolean
 }
 export interface EventListItemCompSnap { }
 
+const displayName = 'EventListItemComp'
+
 export class EventListItemComp extends Component<EventListItemCompProps, EventListItemCompState/* , EventListItemCompSnap */> {
-	static displayName = `EventListItemComp`
+	static displayName = displayName
 
 	constructor(props: EventListItemCompProps) {
 		super(props)
 		this.state = {
-			showDetails: false,
+			expanded: false,
+			alwaysExpanded: false,
 		}
 	}
-	// static getDerivedStateFromProps(nextProps: EventListItemCompProps, prevState: EventListItemCompState): EventListItemCompState | null {}
+	static getDerivedStateFromProps(nextProps: EventListItemCompProps, prevState: EventListItemCompState): EventListItemCompState | null {
+		const { event } = nextProps
+		const isInProgress = event.startTimestamp <= nextProps.now && event.endTimestamp > nextProps.now
+		const alwaysExpanded = nextProps.alwaysExpanded || isInProgress
+		return {
+			...prevState,
+			alwaysExpanded,
+			...alwaysExpanded && { expanded: true },
+		}
+	}
 	// componentWillMount() {}
 	// shouldComponentUpdate(nextProps: EventListItemCompProps, nextState: EventListItemCompState): boolean {}
 	render() {
 		return (
-			<div className={itemCss}>
+			<div className={this.props.event.isDate ? itemIsDateCss : itemCss}>
 				<div
 					className={colorCss}
 					style={{
@@ -61,10 +77,10 @@ export class EventListItemComp extends Component<EventListItemCompProps, EventLi
 							{this.getTimeDifference(this.props.now, this.props.event.startTimestamp)}
 						</div>
 						<div className={dateCss}>
-							{this.props.event.startString}
+							{DateTime.fromMillis(this.props.event.startTimestamp, { locale: this.props.locale }).toLocaleString(DATE_OPTIONS)}
 						</div>
 					</div>
-					{this.state.showDetails &&
+					{this.state.expanded &&
 						<>
 							<div className={metaNameCss}>
 								{`D`}
@@ -80,27 +96,33 @@ export class EventListItemComp extends Component<EventListItemCompProps, EventLi
 									{this.getTimeDifference(this.props.now, this.props.event.endTimestamp)}
 								</div>
 								<div className={dateCss}>
-									{this.props.event.endString}
+									{DateTime.fromMillis(this.props.event.endTimestamp, { locale: this.props.locale }).minus({ milliseconds: this.props.event.isDate ? 1 : 0 }).toLocaleString(DATE_OPTIONS)}
 								</div>
 							</div>
-							<div className={metaNameCss}>
-								{`N`}
-							</div>
-							<div className={metaValueCss}>
-								{get(() => this.getDuration(this.props.event.endTimestamp, this.props.nextEvent!.startTimestamp))}
-							</div>
+							{this.props.nextEvent &&
+								<>
+									<div className={metaNameCss}>
+										{`N`}
+									</div>
+									<div className={metaValueCss}>
+										{get(() => this.getDuration(this.props.event.endTimestamp, this.props.nextEvent!.startTimestamp))}
+									</div>
+								</>
+							}
 						</>
 					}
-					<div className={metaButtonCss}>
-						<button
-							className={detailsButtonCss}
-							type='button'
-							title={this.state.showDetails ? `Hide details` : `Show details`}
-							onClick={this.onShowDetailsClicked}
-						>
-							{this.state.showDetails ? `▲` : `▼`}
-						</button>
-					</div>
+					{!this.state.alwaysExpanded &&
+						<div className={metaButtonCss}>
+							<button
+								className={detailsButtonCss}
+								type='button'
+								title={this.state.expanded ? `Hide details` : `Show details`}
+								onClick={this.onShowDetailsClicked}
+							>
+								{this.state.expanded ? `▲` : `▼`}
+							</button>
+						</div>
+					}
 				</div>
 			</div>
 		)
@@ -113,7 +135,7 @@ export class EventListItemComp extends Component<EventListItemCompProps, EventLi
 	onShowDetailsClicked = () => {
 		this.setState({
 			...this.state,
-			showDetails: !this.state.showDetails,
+			expanded: !this.state.expanded,
 		})
 	}
 
@@ -164,7 +186,7 @@ export class EventListItemComp extends Component<EventListItemCompProps, EventLi
 }
 
 const itemCss = css({
-	label: `${EventListItemComp.displayName}-item`,
+	label: `${displayName}-item`,
 	background: 'white',
 	marginTop: 5,
 	borderRadius: `3px 0 3px 0`,
@@ -192,8 +214,18 @@ const itemCss = css({
 	},
 })
 
+const itemIsDateCss = cx(
+	itemCss,
+	css({
+		label: `${displayName}-itemIsDate`,
+		'&::after': {
+			boxShadow: `inset 0 0 0 3px rgba(0,0,0,.2)`,
+		},
+	}),
+)
+
 const colorCss = css({
-	label: `${EventListItemComp.displayName}-color`,
+	label: `${displayName}-color`,
 	gridArea: 'color',
 	alignSelf: 'baseline',
 	borderWidth: 1,
@@ -206,14 +238,14 @@ const colorCss = css({
 })
 
 const titleCss = css({
-	label: `${EventListItemComp.displayName}-title`,
+	label: `${displayName}-title`,
 	gridArea: 'title',
 	fontWeight: 'bold',
 	alignSelf: 'baseline',
 })
 
 const metaCss = css({
-	label: `${EventListItemComp.displayName}-meta`,
+	label: `${displayName}-meta`,
 	gridArea: 'meta',
 	display: 'grid',
 	gridTemplateColumns: `min-content auto`,
@@ -228,7 +260,7 @@ const metaCellCss = css({
 const metaNameCss = cx(
 	metaCellCss,
 	css({
-		label: `${EventListItemComp.displayName}-metaName`,
+		label: `${displayName}-metaName`,
 		gridColumn: '1 / 2',
 		justifySelf: 'end',
 		fontSize: 10,
@@ -242,7 +274,7 @@ const metaNameCss = cx(
 const metaValueCss = cx(
 	metaCellCss,
 	css({
-		label: `${EventListItemComp.displayName}-metaValue`,
+		label: `${displayName}-metaValue`,
 		gridColumn: '2 / 3',
 	}),
 )
@@ -250,21 +282,21 @@ const metaValueCss = cx(
 const metaButtonCss = cx(
 	metaCellCss,
 	css({
-		label: `${EventListItemComp.displayName}-metaButton`,
+		label: `${displayName}-metaButton`,
 		gridColumn: '1 / 3',
 		padding: 0,
 	}),
 )
 
 const startEndCss = css({
-	label: `${EventListItemComp.displayName}-startEnd`,
+	label: `${displayName}-startEnd`,
 	fontWeight: 'bold',
 })
 
 const detailsButtonCss = cx(
 	buttonCss,
 	css({
-		label: `${EventListItemComp.displayName}-button`,
+		label: `${displayName}-button`,
 		borderColor: `transparent`,
 		borderRadius: 0,
 		padding: 0,
@@ -274,7 +306,7 @@ const detailsButtonCss = cx(
 )
 
 const dateCss = css({
-	label: `${EventListItemComp.displayName}-date`,
+	label: `${displayName}-date`,
 	fontSize: 10,
 	lineHeight: `12px`,
 	color: 'gray',

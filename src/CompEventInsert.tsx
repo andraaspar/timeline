@@ -1,3 +1,4 @@
+import { css } from 'emotion'
 import { get } from 'illa/FunctionUtil'
 import { TSet, withInterface } from 'illa/Type'
 import { Settings } from 'luxon'
@@ -11,6 +12,7 @@ import { EventListItemComp } from './EventListItemComp'
 import { ICalendar } from './ICalendar'
 import { IEvent, makeIEventFromEventInput } from './IEvent'
 import { inputCss } from './inputCss'
+import { inputLabelCss } from './inputLabelCss'
 import { RowComp } from './RowComp'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
@@ -29,7 +31,9 @@ export interface CompEventInsertPropsDispatch {
 export interface CompEventInsertPropsOwn { }
 export interface CompEventInsertProps extends CompEventInsertPropsOwn, CompEventInsertPropsFromStore, CompEventInsertPropsDispatch { }
 export interface CompEventInsertState {
-	readonly value: string
+	readonly start: string
+	readonly end: string
+	readonly summary: string
 	readonly eventInput: gapi.client.calendar.EventInput | null
 	readonly event: IEvent | null
 	readonly calendarId: string
@@ -45,7 +49,9 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 	constructor(props: CompEventInsertProps) {
 		super(props)
 		this.state = {
-			value: '',
+			start: '',
+			end: '',
+			summary: '',
 			eventInput: null,
 			event: null,
 			calendarId: 'primary',
@@ -60,7 +66,9 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 			...prevState,
 			calendarId: Object.keys(nextProps.calendarsById).find(id => !!get(() => nextProps.calendarsById[id].primary)) || 'primary',
 			isSaving,
-			value: success ? '' : prevState.value,
+			start: success ? '' : prevState.start,
+			end: success ? '' : prevState.end,
+			summary: success ? '' : prevState.summary,
 			event: success ? null : prevState.event,
 			eventInput: success ? null : prevState.eventInput,
 		}
@@ -69,20 +77,49 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 	render() {
 		return (
 			<RowComp distance={5} isVertical>
-				<input
-					className={inputCss}
-					type='text'
-					value={this.state.value}
-					onChange={this.onValueChanged}
-					disabled={this.state.isSaving}
-					placeholder={`Create an event: [from][to] event name...`}
-				/>
+				<div className={createRowCss}>
+					<div className={inputLabelCss}>
+						{`Create:`}
+					</div>
+					<div>
+						<input
+							className={inputCss}
+							type='text'
+							value={this.state.start}
+							onChange={this.onStartValueChanged}
+							disabled={this.state.isSaving}
+							placeholder={`Start`}
+						/>
+					</div>
+					<div>
+						<input
+							className={inputCss}
+							type='text'
+							value={this.state.end}
+							onChange={this.onEndValueChanged}
+							disabled={this.state.isSaving}
+							placeholder={`End`}
+						/>
+					</div>
+					<div>
+						<input
+							className={inputCss}
+							type='text'
+							value={this.state.summary}
+							onChange={this.onSummaryValueChanged}
+							disabled={this.state.isSaving}
+							placeholder={`Summary`}
+						/>
+					</div>
+				</div>
 				{this.state.event &&
 					<EventListItemComp
 						calendar={this.props.calendarsById[this.state.calendarId]}
 						event={this.state.event}
 						nextEvent={null}
 						now={this.props.now}
+						alwaysExpanded={true}
+						locale={this.props.locale}
 					/>
 				}
 				{this.state.eventInput &&
@@ -103,13 +140,32 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 	// componentDidUpdate(prevProps: CompEventInsertProps, prevState: CompEventInsertState, snapshot: CompEventInsertSnap) {}
 	// componentWillUnmount() {}
 
-	onValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
-		const value = e.currentTarget.value
-		const eventInput = get<gapi.client.calendar.EventInput | null>(() => eventInputFromString(Settings.defaultZoneName, value), null) as gapi.client.calendar.EventInput | null
+	onStartValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
+		const start = e.currentTarget.value
+		const { end, summary } = this.state
+		this.setStartEndSummary(start, end, summary)
+	}
+
+	onEndValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
+		const end = e.currentTarget.value
+		const { start, summary } = this.state
+		this.setStartEndSummary(start, end, summary)
+	}
+
+	onSummaryValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
+		const summary = e.currentTarget.value
+		const { start, end } = this.state
+		this.setStartEndSummary(start, end, summary)
+	}
+
+	setStartEndSummary(start: string, end: string, summary: string) {
+		const eventInput = get<gapi.client.calendar.EventInput | null>(() => eventInputFromString(Settings.defaultZoneName, start, end, summary), null) as gapi.client.calendar.EventInput | null
 		const event = eventInput ? makeIEventFromEventInput({ calendarId: this.state.calendarId, locale: this.props.locale }, eventInput) : null
 		this.setState({
 			...this.state,
-			value,
+			start,
+			end,
+			summary,
 			eventInput,
 			event,
 		})
@@ -138,3 +194,12 @@ export const CompEventInsert = connect(
 		},
 	}),
 )(CompEventInsertPure)
+
+const createRowCss = css({
+	label: `${displayName}-createRow`,
+	display: 'flex',
+	'& > * + *': {
+		flexGrow: 1,
+		marginLeft: 5,
+	},
+})

@@ -1,12 +1,10 @@
 import { DateTime } from 'luxon'
-import { DATE_OPTIONS } from './statics'
 
 export interface IEvent extends Readonly<Partial<gapi.client.calendar.Event>> {
 	readonly calendarId: string
 	readonly startTimestamp: number
 	readonly endTimestamp: number
-	readonly startString: string
-	readonly endString: string
+	readonly isDate: boolean
 }
 
 export interface IEventContext {
@@ -15,27 +13,27 @@ export interface IEventContext {
 }
 
 export function makeIEventFromCalendarEvent(o: IEventContext, event: gapi.client.calendar.Event): IEvent {
+	const isDate = !!event.start.date
 	const start = DateTime.fromISO(event.start.dateTime || event.start.date!, { zone: event.start.timeZone, locale: o.locale })
 	const end = DateTime.fromISO(event.end.dateTime || event.end.date!, { zone: event.end.timeZone, locale: o.locale })
 	return {
 		...event,
 		calendarId: o.calendarId,
+		isDate,
 		startTimestamp: start.toMillis(),
 		endTimestamp: end.toMillis(),
-		startString: start.toLocaleString(DATE_OPTIONS),
-		endString: end.toLocaleString(DATE_OPTIONS),
 	}
 }
 
 export function makeIEventFromEventInput(o: IEventContext, event: gapi.client.calendar.EventInput): IEvent {
+	const isDate = !!event.start.date
 	const start = DateTime.fromISO(event.start.dateTime || event.start.date!, { zone: event.start.timeZone, locale: o.locale })
 	const end = DateTime.fromISO(event.end.dateTime || event.end.date!, { zone: event.end.timeZone, locale: o.locale })
 	return {
 		calendarId: o.calendarId,
 		summary: event.summary,
+		isDate,
 		startTimestamp: start.toMillis(),
 		endTimestamp: end.toMillis(),
-		startString: start.toLocaleString(DATE_OPTIONS),
-		endString: end.toLocaleString(DATE_OPTIONS),
 	}
 }

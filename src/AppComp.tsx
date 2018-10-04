@@ -16,6 +16,7 @@ import { EventListComp } from './EventListComp'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
 import { inputCss } from './inputCss'
+import { inputLabelCss } from './inputLabelCss'
 import { OnMountComp } from './OnMountComp'
 import { RowComp } from './RowComp'
 import { eventsOrderedFutureSelector, eventsOrderedPastSelector, gotEventsSelector } from './selectors'
@@ -230,6 +231,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 															orderedEvents={this.props.orderedFutureEvents}
 															eventsLoadState={this.props.eventsLoadState}
 															now={this.props.now}
+															locale={this.props.locale}
 														/>
 														<button
 															className={buttonCss}
@@ -247,6 +249,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 															orderedEvents={this.props.orderedPastEvents}
 															eventsLoadState={this.props.eventsLoadState}
 															now={this.props.now}
+															locale={this.props.locale}
 														/>
 														<button
 															className={buttonCss}
@@ -405,18 +408,6 @@ const eventsPanelCss = css({
 	'& + &': {
 		marginLeft: 5,
 	},
-})
-
-const inputLabelCss = css({
-	label: `${displayName}-inputLabel`,
-	whiteSpace: 'nowrap',
-	fontSize: `12px`,
-	fontWeight: 'bold',
-	color: 'gray',
-	borderTop: `1px solid transparent`,
-	borderBottom: `1px solid transparent`,
-	paddingTop: 5,
-	paddingBottom: 5,
 })
 
 const errorsCss = css({

@@ -11,6 +11,7 @@ export interface EventListCompProps {
 	readonly orderedEvents: ReadonlyArray<IEvent>
 	readonly eventsLoadState: StateLoad
 	readonly now: number
+	readonly locale: string
 }
 export interface EventListCompState { }
 export interface EventListCompSnapshot { }
@@ -44,7 +45,8 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 								event={event}
 								calendar={this.props.calendarsById[event.calendarId]}
 								now={this.props.now}
-								nextEvent={events[index + 1]}
+								nextEvent={events.slice(index + 1).find(e => e.isDate == event.isDate) || null}
+								locale={this.props.locale}
 							/>
 						)}
 					</RowComp>

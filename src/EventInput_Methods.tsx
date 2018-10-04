@@ -5,34 +5,24 @@ interface IOptions {
 	now?: DateTime
 }
 
-export function eventInputFromString(timeZone: string, s: string, o: IOptions = {}): gapi.client.calendar.EventInput {
-	const tokens = tokenizeString(timeZone, s, o)
+export function eventInputFromString(timeZone: string, startStr: string, endStr: string, summary: string, o: IOptions = {}): gapi.client.calendar.EventInput {
+	if (!summary) throw new Error(`[pg30st] No summary.`)
+	const start = parseDate(timeZone, startStr, o.now)
+	const end = get(() => parseDate(timeZone, endStr, start), start)!
 	return {
-		summary: tokens.summary,
-		start: dateTimeToGapiDateTime(tokens.start),
-		end: dateTimeToGapiDateTime(tokens.end || tokens.start, { isEnd: true }),
+		summary,
+		start: dateTimeToGapiDateTime(start),
+		end: dateTimeToGapiDateTime(end, { isEnd: true }),
 	}
 }
 
-const tokensRe = /^\[(.*?)(?:\]\[(.*?))?\] (.*)$/i
-
-function tokenizeString(timeZone: string, s: string, o: IOptions) {
-	const r = tokensRe.exec(s)
-	if (!r) throw new Error(`[pg2ow9] Invalid string.`)
-	const start = parseDate(timeZone, r[1], o.now)
-	const end = get<DateTime | null>(() => parseDate(timeZone, r[2], start), null)
-	return {
-		start,
-		end,
-		summary: r[3],
-	}
-}
-
-const dateRe = /^(.*?)(?:([-+])p(.*))?$/i
+const dateRe = /^(.*?)\s*(?:([-+])p(.*))?$/i
 const dateNoYearRe = /^[0-9]{2}-[0-9]{2}/i
 const dateNoYearNoMonthRe = /^[0-9]{2}(?![-0-9:]{2})/i
 const timeNoDateRe = /^[0-9]{2}:[0-9]{2}/i
 function parseDate(timeZone: string, s: string, fallbackDt = DateTime.local()) {
+	s = s.trim()
+	if (!s) return fallbackDt
 	const r = dateRe.exec(s)
 	if (!r) throw new Error(`[pg2oys] Invalid date.`)
 	let date = r[1]
