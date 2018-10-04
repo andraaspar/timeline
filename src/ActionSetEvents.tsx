@@ -1,6 +1,6 @@
-import { TOmit } from 'illa/Type';
-import { ActionType } from './ActionType';
-import { IEvent } from './IEvent';
+import { TOmit } from 'illa/Type'
+import { ActionType } from './ActionType'
+import { IEvent } from './IEvent'
 
 export interface ActionSetEvents {
 	readonly type: ActionType.SetEvents

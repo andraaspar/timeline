@@ -1,6 +1,6 @@
-import { withInterface } from 'illa/Type';
-import { DateTime, Settings } from 'luxon';
-import { eventInputFromString } from './EventInput_Methods';
+import { withInterface } from 'illa/Type'
+import { DateTime, Settings } from 'luxon'
+import { eventInputFromString } from './EventInput_Methods'
 
 Settings.throwOnInvalid = true
 

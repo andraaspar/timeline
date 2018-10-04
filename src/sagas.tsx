@@ -1,23 +1,23 @@
-import { delay } from 'redux-saga';
-import { fork, put, select, take, takeLatest } from 'redux-saga/effects';
-import { makeActionAddErrors } from './ActionAddErrors';
-import { ActionLoadCalendars } from './ActionLoadCalendars';
-import { ActionLoadEventsFromAllCalendars, makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars';
-import { ActionRequestEventInsert } from './ActionRequestEventInsert';
-import { makeActionSetCalendars } from './ActionSetCalendars';
-import { makeActionSetEvents } from './ActionSetEvents';
-import { makeActionSetGapiReady } from './ActionSetGapiReady';
-import { ActionSetLocale } from './ActionSetLocale';
-import { makeActionSetSignedIn } from './ActionSetSignedIn';
-import { ActionSetVisibility } from './ActionSetVisibility';
-import { ActionType } from './ActionType';
-import { makeActionUpdateStateLoad } from './ActionUpdateStateLoad';
-import { GAPI } from './GAPI';
-import { ICalendar } from './ICalendar';
-import { IEvent } from './IEvent';
-import { saveLocale } from './LocaleUtil';
-import { gotEventsSelector } from './selectors';
-import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT, MINUTE, SECOND } from './statics';
+import { delay } from 'redux-saga'
+import { fork, put, select, take, takeLatest } from 'redux-saga/effects'
+import { makeActionAddErrors } from './ActionAddErrors'
+import { ActionLoadCalendars } from './ActionLoadCalendars'
+import { ActionLoadEventsFromAllCalendars, makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars'
+import { ActionRequestEventInsert } from './ActionRequestEventInsert'
+import { makeActionSetCalendars } from './ActionSetCalendars'
+import { makeActionSetEvents } from './ActionSetEvents'
+import { makeActionSetGapiReady } from './ActionSetGapiReady'
+import { ActionSetLocale } from './ActionSetLocale'
+import { makeActionSetSignedIn } from './ActionSetSignedIn'
+import { ActionSetVisibility } from './ActionSetVisibility'
+import { ActionType } from './ActionType'
+import { makeActionUpdateStateLoad } from './ActionUpdateStateLoad'
+import { GAPI } from './GAPI'
+import { ICalendar } from './ICalendar'
+import { IEvent } from './IEvent'
+import { saveLocale } from './LocaleUtil'
+import { gotEventsSelector } from './selectors'
+import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT, MINUTE, SECOND } from './statics'
 
 export function* rootSaga() {
 	yield fork(gapiSaga)

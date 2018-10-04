@@ -1,5 +1,5 @@
-import { makeActionSetNow } from './ActionSetNow';
-import { store } from './store';
+import { makeActionSetNow } from './ActionSetNow'
+import { store } from './store'
 
 export namespace Timer {
 

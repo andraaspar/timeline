@@ -1,11 +1,10 @@
-import { TSet } from 'illa/Type';
-import * as React from 'react';
-import { Component } from 'react';
-import { EventListItemComp } from './EventListItemComp';
-import { ICalendar } from './ICalendar';
-import { IEvent } from './IEvent';
-import { RowComp } from './RowComp';
-import { StateLoad } from './StateLoad';
+import { TSet } from 'illa/Type'
+import React, { Component } from 'react'
+import { EventListItemComp } from './EventListItemComp'
+import { ICalendar } from './ICalendar'
+import { IEvent } from './IEvent'
+import { RowComp } from './RowComp'
+import { StateLoad } from './StateLoad'
 
 export interface EventListCompProps {
 	readonly calendarsById: Readonly<TSet<ICalendar>>

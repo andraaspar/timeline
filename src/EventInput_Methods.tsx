@@ -1,5 +1,5 @@
-import { get } from 'illa/FunctionUtil';
-import { DateTime, DateTimeOptions, Duration } from 'luxon';
+import { get } from 'illa/FunctionUtil'
+import { DateTime, DateTimeOptions, Duration } from 'luxon'
 
 interface IOptions {
 	now?: DateTime
@@ -18,8 +18,9 @@ const tokensRe = /^\[(.*?)(?:\]\[(.*?))?\] (.*)$/i
 
 function tokenizeString(timeZone: string, s: string, o: IOptions) {
 	const r = tokensRe.exec(s)
+	if (!r) throw new Error(`[pg2ow9] Invalid string.`)
 	const start = parseDate(timeZone, r[1], o.now)
-	const end = get(() => parseDate(timeZone, r[2], start), null)
+	const end = get<DateTime | null>(() => parseDate(timeZone, r[2], start), null)
 	return {
 		start,
 		end,
@@ -33,10 +34,11 @@ const dateNoYearNoMonthRe = /^[0-9]{2}(?![-0-9:]{2})/i
 const timeNoDateRe = /^[0-9]{2}:[0-9]{2}/i
 function parseDate(timeZone: string, s: string, fallbackDt = DateTime.local()) {
 	const r = dateRe.exec(s)
+	if (!r) throw new Error(`[pg2oys] Invalid date.`)
 	let date = r[1]
 	const addOrSubtract = r[2]
 	const range = r[3]
-	const options: DateTimeOptions = timeZone ? { zone: timeZone } : undefined
+	const options: DateTimeOptions | undefined = timeZone ? { zone: timeZone } : undefined
 	if (date) {
 		if (dateNoYearRe.test(date)) {
 			let newDate = `${fallbackDt.toFormat('yyyy')}-${date}`

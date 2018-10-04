@@ -1,15 +1,15 @@
-import { css, cx } from 'emotion';
-import { get } from 'illa/FunctionUtil';
-import React, { Component } from 'react';
-import { buttonCss } from './buttonCss';
-import { ICalendar } from './ICalendar';
-import { IEvent } from './IEvent';
-import { DAY, HOUR, MINUTE, SECOND, WEEK } from './statics';
+import { css, cx } from 'emotion'
+import { get } from 'illa/FunctionUtil'
+import React, { Component } from 'react'
+import { buttonCss } from './buttonCss'
+import { ICalendar } from './ICalendar'
+import { IEvent } from './IEvent'
+import { DAY, HOUR, MINUTE, SECOND, WEEK } from './statics'
 
 export interface EventListItemCompProps {
 	readonly calendar: ICalendar
 	readonly event: IEvent
-	readonly nextEvent: IEvent
+	readonly nextEvent: IEvent | null
 	readonly now: number
 }
 export interface EventListItemCompState {
@@ -87,7 +87,7 @@ export class EventListItemComp extends Component<EventListItemCompProps, EventLi
 								{`N`}
 							</div>
 							<div className={metaValueCss}>
-								{get(() => this.getDuration(this.props.event.endTimestamp, this.props.nextEvent.startTimestamp))}
+								{get(() => this.getDuration(this.props.event.endTimestamp, this.props.nextEvent!.startTimestamp))}
 							</div>
 						</>
 					}

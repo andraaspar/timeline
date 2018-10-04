@@ -1,4 +1,4 @@
-import { css } from 'emotion';
+import { css } from 'emotion'
 
 export const inputCss = css({
 	label: `inputCss`,

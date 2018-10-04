@@ -1,29 +1,28 @@
-import { css } from 'emotion';
-import { TSet, withInterface } from 'illa/Type';
-import * as React from 'react';
-import { Component } from 'react';
-import { connect } from 'react-redux';
-import { Dispatch } from 'redux';
-import { makeActionClearErrors } from './ActionClearErrors';
-import { makeActionInitGapi } from './ActionInitGapi';
-import { makeActionLoadCalendars } from './ActionLoadCalendars';
-import { makeActionSetInterval } from './ActionSetInterval';
-import { makeActionSetLocale } from './ActionSetLocale';
-import { makeActionSignIn } from './ActionSignIn';
-import { makeActionSignOut } from './ActionSignOut';
-import { buttonCss } from './buttonCss';
-import { CompEventInsert } from './CompEventInsert';
-import { EventListComp } from './EventListComp';
-import { ICalendar } from './ICalendar';
-import { IEvent } from './IEvent';
-import { inputCss } from './inputCss';
-import { OnMountComp } from './OnMountComp';
-import { RowComp } from './RowComp';
-import { eventsOrderedFutureSelector, eventsOrderedPastSelector, gotEventsSelector } from './selectors';
-import { State } from './State';
-import { StateLoad } from './StateLoad';
-import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS } from './statics';
-import { TAction } from './TAction';
+import { css } from 'emotion'
+import { TSet, withInterface } from 'illa/Type'
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+import { makeActionClearErrors } from './ActionClearErrors'
+import { makeActionInitGapi } from './ActionInitGapi'
+import { makeActionLoadCalendars } from './ActionLoadCalendars'
+import { makeActionSetInterval } from './ActionSetInterval'
+import { makeActionSetLocale } from './ActionSetLocale'
+import { makeActionSignIn } from './ActionSignIn'
+import { makeActionSignOut } from './ActionSignOut'
+import { buttonCss } from './buttonCss'
+import { CompEventInsert } from './CompEventInsert'
+import { EventListComp } from './EventListComp'
+import { ICalendar } from './ICalendar'
+import { IEvent } from './IEvent'
+import { inputCss } from './inputCss'
+import { OnMountComp } from './OnMountComp'
+import { RowComp } from './RowComp'
+import { eventsOrderedFutureSelector, eventsOrderedPastSelector, gotEventsSelector } from './selectors'
+import { State } from './State'
+import { StateLoad } from './StateLoad'
+import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS } from './statics'
+import { TAction } from './TAction'
 
 export interface AppCompPropsFromStore {
 	readonly gapiReady: boolean

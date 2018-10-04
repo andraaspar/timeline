@@ -1,21 +1,21 @@
-import { get } from 'illa/FunctionUtil';
-import { TSet, withInterface } from 'illa/Type';
-import { Settings } from 'luxon';
-import React, { ChangeEvent, Component } from 'react';
-import { connect } from 'react-redux';
-import { Dispatch } from 'redux';
-import { makeActionRequestEventInsert } from './ActionRequestEventInsert';
-import { buttonCss } from './buttonCss';
-import { eventInputFromString } from './EventInput_Methods';
-import { EventListItemComp } from './EventListItemComp';
-import { ICalendar } from './ICalendar';
-import { IEvent, makeIEventFromEventInput } from './IEvent';
-import { inputCss } from './inputCss';
-import { RowComp } from './RowComp';
-import { State } from './State';
-import { StateLoad } from './StateLoad';
-import { LOAD_STATE_INSERT_EVENT } from './statics';
-import { TAction } from './TAction';
+import { get } from 'illa/FunctionUtil'
+import { TSet, withInterface } from 'illa/Type'
+import { Settings } from 'luxon'
+import React, { ChangeEvent, Component } from 'react'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+import { makeActionRequestEventInsert } from './ActionRequestEventInsert'
+import { buttonCss } from './buttonCss'
+import { eventInputFromString } from './EventInput_Methods'
+import { EventListItemComp } from './EventListItemComp'
+import { ICalendar } from './ICalendar'
+import { IEvent, makeIEventFromEventInput } from './IEvent'
+import { inputCss } from './inputCss'
+import { RowComp } from './RowComp'
+import { State } from './State'
+import { StateLoad } from './StateLoad'
+import { LOAD_STATE_INSERT_EVENT } from './statics'
+import { TAction } from './TAction'
 
 export interface CompEventInsertPropsFromStore {
 	readonly loadState: StateLoad
@@ -30,8 +30,8 @@ export interface CompEventInsertPropsOwn { }
 export interface CompEventInsertProps extends CompEventInsertPropsOwn, CompEventInsertPropsFromStore, CompEventInsertPropsDispatch { }
 export interface CompEventInsertState {
 	readonly value: string
-	readonly eventInput: gapi.client.calendar.EventInput
-	readonly event: IEvent
+	readonly eventInput: gapi.client.calendar.EventInput | null
+	readonly event: IEvent | null
 	readonly calendarId: string
 	readonly isSaving: boolean
 }
@@ -105,7 +105,7 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 
 	onValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
 		const value = e.currentTarget.value
-		const eventInput = get(() => eventInputFromString(Settings.defaultZoneName, value), null)
+		const eventInput = get<gapi.client.calendar.EventInput | null>(() => eventInputFromString(Settings.defaultZoneName, value), null) as gapi.client.calendar.EventInput | null
 		const event = eventInput ? makeIEventFromEventInput({ calendarId: this.state.calendarId, locale: this.props.locale }, eventInput) : null
 		this.setState({
 			...this.state,
@@ -116,7 +116,9 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 	}
 
 	onSaveEventClicked = () => {
-		this.props.insertEvent(this.state.calendarId, this.state.eventInput)
+		if (this.state.eventInput) {
+			this.props.insertEvent(this.state.calendarId, this.state.eventInput)
+		}
 	}
 }
 

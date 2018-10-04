@@ -1,5 +1,5 @@
-import { TOmit } from 'illa/Type';
-import { ActionType } from './ActionType';
+import { TOmit } from 'illa/Type'
+import { ActionType } from './ActionType'
 
 export interface ActionSetGapiReady {
 	readonly type: ActionType.SetGapiReady

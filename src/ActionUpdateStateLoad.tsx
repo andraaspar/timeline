@@ -1,6 +1,6 @@
-import { TOmit } from 'illa/Type';
-import { ActionType } from './ActionType';
-import { StateLoad } from './StateLoad';
+import { TOmit } from 'illa/Type'
+import { ActionType } from './ActionType'
+import { StateLoad } from './StateLoad'
 
 export interface ActionUpdateStateLoad {
 	readonly type: ActionType.UpdateStateLoad

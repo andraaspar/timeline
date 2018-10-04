@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component } from 'react'
 
 export interface OnMountCompProps {
 	readonly onMount: () => void

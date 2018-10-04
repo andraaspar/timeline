@@ -1,5 +1,5 @@
-import { makeActionSetVisibility } from './ActionSetVisibility';
-import { store } from './store';
+import { makeActionSetVisibility } from './ActionSetVisibility'
+import { store } from './store'
 
 export namespace Visibility {
 

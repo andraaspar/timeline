@@ -2,7 +2,7 @@ import { getIfNot } from 'illa/FunctionUtil'
 import { isNumber, isObjectNotNull, isString, withInterface } from 'illa/Type'
 import { ITopRightBottomLeft, IXY, TTopRightBottomLeft, TXY } from './TTopRightBottomLeft'
 
-export function normalizeXY(o: TXY<number | string>, unit?: string): IXY<string> {
+export function normalizeXY(o: TXY<number | string> | undefined, unit?: string): IXY<string> {
 	if (isObjectNotNull(o)) {
 		return withInterface<IXY<string>>({
 			x: stringOrNumberToUnit(o.x, unit),
@@ -16,37 +16,37 @@ export function normalizeXY(o: TXY<number | string>, unit?: string): IXY<string>
 	})
 }
 
-export function topRightBottomLeftToMulti(o: TTopRightBottomLeft<number>, defaultValue = 1): ITopRightBottomLeft<number> {
+export function topRightBottomLeftToMulti(o: TTopRightBottomLeft<number> | undefined, defaultValue = 1): ITopRightBottomLeft<number> {
 	if (isObjectNotNull(o)) {
 		if ('x' in o) {
 			if ('y' in o) {
 				return {
-					t: getIfNot(isNaN, o.y, defaultValue),
-					r: getIfNot(isNaN, o.x, defaultValue),
-					b: getIfNot(isNaN, o.y, defaultValue),
-					l: getIfNot(isNaN, o.x, defaultValue),
+					t: getIfNot(isNaN, o.y, defaultValue)!,
+					r: getIfNot(isNaN, o.x, defaultValue)!,
+					b: getIfNot(isNaN, o.y, defaultValue)!,
+					l: getIfNot(isNaN, o.x, defaultValue)!,
 				}
 			} else {
 				return {
-					t: getIfNot(isNaN, o.t, defaultValue),
-					r: getIfNot(isNaN, o.x, defaultValue),
-					b: getIfNot(isNaN, o.b, defaultValue),
-					l: getIfNot(isNaN, o.x, defaultValue),
+					t: getIfNot(isNaN, o.t, defaultValue)!,
+					r: getIfNot(isNaN, o.x, defaultValue)!,
+					b: getIfNot(isNaN, o.b, defaultValue)!,
+					l: getIfNot(isNaN, o.x, defaultValue)!,
 				}
 			}
 		} else if ('y' in o) {
 			return {
-				t: getIfNot(isNaN, o.y, defaultValue),
-				r: getIfNot(isNaN, o.r, defaultValue),
-				b: getIfNot(isNaN, o.y, defaultValue),
-				l: getIfNot(isNaN, o.l, defaultValue),
+				t: getIfNot(isNaN, o.y, defaultValue)!,
+				r: getIfNot(isNaN, o.r, defaultValue)!,
+				b: getIfNot(isNaN, o.y, defaultValue)!,
+				l: getIfNot(isNaN, o.l, defaultValue)!,
 			}
 		} else {
 			return {
-				t: getIfNot(isNaN, o.t, defaultValue),
-				r: getIfNot(isNaN, o.r, defaultValue),
-				b: getIfNot(isNaN, o.b, defaultValue),
-				l: getIfNot(isNaN, o.l, defaultValue),
+				t: getIfNot(isNaN, o.t, defaultValue)!,
+				r: getIfNot(isNaN, o.r, defaultValue)!,
+				b: getIfNot(isNaN, o.b, defaultValue)!,
+				l: getIfNot(isNaN, o.l, defaultValue)!,
 			}
 		}
 	} else if (isNumber(o) && !isNaN(o)) {
@@ -65,7 +65,7 @@ export function topRightBottomLeftToMulti(o: TTopRightBottomLeft<number>, defaul
 	}
 }
 
-export function topRightBottomLeftToCssValue(o: TTopRightBottomLeft<number | string>, unit?: string, multi?: TTopRightBottomLeft<number>): string {
+export function topRightBottomLeftToCssValue(o: TTopRightBottomLeft<number | string> | undefined, unit?: string, multi?: TTopRightBottomLeft<number>): string | undefined {
 	const m = topRightBottomLeftToMulti(multi)
 	if (isObjectNotNull(o)) {
 		if ('x' in o) {
@@ -85,7 +85,7 @@ export function topRightBottomLeftToCssValue(o: TTopRightBottomLeft<number | str
 	return undefined
 }
 
-export function stringOrNumberToUnit(o: string | number, unit = 'px', multi = 1): string {
+export function stringOrNumberToUnit(o: string | number | undefined, unit = 'px', multi = 1): string {
 	if (multi == 0) {
 		return '0'
 	} else if (multi == 1) {

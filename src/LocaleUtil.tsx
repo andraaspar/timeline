@@ -1,9 +1,9 @@
-import { isArray } from 'illa/Type';
+import { isArray } from 'illa/Type'
 
 const LOCALE_KEY = 'locale'
 
 export function getLocale() {
-	let result: string
+	let result: string | null | undefined
 	try {
 		result = localStorage.getItem(LOCALE_KEY)
 	} catch (e) {}

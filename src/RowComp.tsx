@@ -1,8 +1,8 @@
-import * as CSS from 'csstype';
-import { css, cx } from 'emotion';
-import React, { Children, Component, ReactElement } from 'react';
-import { TTopRightBottomLeft, TXY } from './TTopRightBottomLeft';
-import { normalizeXY, topRightBottomLeftToCssValue } from './TTopRightBottomLeft_Methods';
+import * as CSS from 'csstype'
+import { css, cx } from 'emotion'
+import React, { Children, Component, ReactElement } from 'react'
+import { TTopRightBottomLeft, TXY } from './TTopRightBottomLeft'
+import { normalizeXY, topRightBottomLeftToCssValue } from './TTopRightBottomLeft_Methods'
 
 export interface RowCompProps {
 	inset?: TTopRightBottomLeft
@@ -58,7 +58,7 @@ export class RowComp extends Component<RowCompProps, RowCompState/* , RowCompSna
 					{Children.map(this.props.children, child =>
 						child &&
 						<div
-							key={(child as ReactElement<any>).key}
+							key={(child as ReactElement<any>).key || undefined}
 							className={itemClass}
 						>
 							{child}

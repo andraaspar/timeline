@@ -1,5 +1,5 @@
-import { createSelector } from 'reselect';
-import { State } from './State';
+import { createSelector } from 'reselect'
+import { State } from './State'
 
 export const nowSelector = (state: State) => state.now
 export const eventsByIdSelector = (state: State) => state.eventsById
@@ -16,7 +16,7 @@ export const eventsOrderedSelector = createSelector(
 			if (endDiff) {
 				return endDiff
 			}
-			return (a.summary || '').localeCompare(b.summary)
+			return (a.summary || '').localeCompare(b.summary || '')
 		})
 	},
 )

@@ -1,12 +1,12 @@
-import { TSet, withInterface } from 'illa/Type';
-import zipObject from 'lodash/zipObject';
-import { ActionType } from './ActionType';
-import { ICalendar } from './ICalendar';
-import { IEvent } from './IEvent';
-import { getLocale } from './LocaleUtil';
-import { StateLoad } from './StateLoad';
-import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT } from './statics';
-import { TAction } from './TAction';
+import { TSet, withInterface } from 'illa/Type'
+import zipObject from 'lodash/zipObject'
+import { ActionType } from './ActionType'
+import { ICalendar } from './ICalendar'
+import { IEvent } from './IEvent'
+import { getLocale } from './LocaleUtil'
+import { StateLoad } from './StateLoad'
+import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT } from './statics'
+import { TAction } from './TAction'
 
 export interface State {
 	readonly loadStatesById: Readonly<TSet<StateLoad>>
@@ -67,7 +67,7 @@ export function reducerState(state = makeState(), action: TAction): State {
 		case ActionType.SetEvents:
 			return {
 				...state,
-				eventsById: zipObject(action.events.map(_ => _.id), action.events),
+				eventsById: zipObject(action.events.map(_ => _.id + ''), action.events),
 			}
 		case ActionType.SetGapiReady:
 			return {

@@ -14,9 +14,10 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noImplicitAny": true,
-    "strictNullChecks": false,
+    "importHelpers": true,
+    "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "allowSyntheticDefaultImports": true,
     "downlevelIteration": true
   },

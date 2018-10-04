@@ -1,0 +1,49 @@
+{
+	"extends": [],
+	"defaultSeverity": "error",
+	"linterOptions": {
+		"exclude": [
+			"config/**/*.js",
+			"node_modules/**/*.ts",
+			"coverage/lcov-report/*.js"
+		]
+	},
+	"rules": {
+		"no-duplicate-imports": true,
+		"import-spacing": true,
+		"ordered-imports": true,
+		"quotemark": [
+			true,
+			"single",
+			"jsx-single",
+			"avoid-escape"
+		],
+		"semicolon": [
+			true,
+			"never"
+		],
+		"no-angle-bracket-type-assertion": true,
+		"new-parens": true,
+		"encoding": true,
+		"array-type": [
+			true,
+			"array"
+		],
+		"linebreak-style": [
+			true,
+			"LF"
+		],
+		"eofline": true,
+		"radix": true,
+		"prefer-object-spread": true,
+		"no-unused-expression": true,
+		"no-invalid-template-strings": true,
+		"no-object-literal-type-assertion": true,
+		"no-string-throw": true,
+		"no-for-in-array": true,
+		"no-conditional-assignment": true,
+		"forin": true,
+		"await-promise": true,
+		"unified-signatures": true
+	}
+}

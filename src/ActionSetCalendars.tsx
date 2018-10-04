@@ -1,6 +1,6 @@
-import { TOmit } from 'illa/Type';
-import { ActionType } from './ActionType';
-import { ICalendar } from './ICalendar';
+import { TOmit } from 'illa/Type'
+import { ActionType } from './ActionType'
+import { ICalendar } from './ICalendar'
 
 export interface ActionSetCalendars {
 	readonly type: ActionType.SetCalendars

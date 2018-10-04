@@ -1,8 +1,8 @@
-import { makeActionSetSignedIn } from './ActionSetSignedIn';
-import { ICalendar } from './ICalendar';
-import { IEvent, IEventContext, makeIEventFromCalendarEvent } from './IEvent';
-import { WEEK } from './statics';
-import { store } from './store';
+import { makeActionSetSignedIn } from './ActionSetSignedIn'
+import { ICalendar } from './ICalendar'
+import { IEvent, IEventContext, makeIEventFromCalendarEvent } from './IEvent'
+import { WEEK } from './statics'
+import { store } from './store'
 
 export namespace GAPI {
 	export const ERROR_AUTH2 = `[pfnwpe] GAPI auth2 error`
@@ -75,7 +75,7 @@ export namespace GAPI {
 
 	export function loadEventsFromCalendar(calendarId: string, events: ReadonlyArray<IEvent> = [], pageToken?: string) {
 		return new Promise<IEvent[]>((resolve, reject) => {
-			const { endWeeks, startWeeks, locale } = store.getState()
+			const { endWeeks, startWeeks, locale } = store.getState()!
 			gapi.client.calendar.events.list({
 				calendarId,
 				timeMin: (new Date(Date.now() + startWeeks * WEEK)).toISOString(),
@@ -106,9 +106,9 @@ export namespace GAPI {
 	export function loadEventsFromAllCalendars() {
 		return new Promise<IEvent[]>((resolve, reject) => {
 			Promise.all(
-				Object.keys(store.getState().calendarsById)
+				Object.keys(store.getState()!.calendarsById)
 					.filter(calendarId => {
-						const calendar = store.getState().calendarsById[calendarId]
+						const calendar = store.getState()!.calendarsById[calendarId]
 						return !!calendar.selected
 					})
 					.map(calendarId => loadEventsFromCalendar(calendarId))
