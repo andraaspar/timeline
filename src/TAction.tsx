@@ -7,7 +7,6 @@ import { ActionRequestEventInsert } from './ActionRequestEventInsert'
 import { ActionSetCalendars } from './ActionSetCalendars'
 import { ActionSetEvents } from './ActionSetEvents'
 import { ActionSetGapiReady } from './ActionSetGapiReady'
-import { ActionSetInterval } from './ActionSetInterval'
 import { ActionSetLocale } from './ActionSetLocale'
 import { ActionSetNow } from './ActionSetNow'
 import { ActionSetSignedIn } from './ActionSetSignedIn'
@@ -26,7 +25,6 @@ export type TAction =
 	| ActionSetCalendars
 	| ActionLoadCalendars
 	| ActionSetNow
-	| ActionSetInterval
 	| ActionSetLocale
 	| ActionAddErrors
 	| ActionClearErrors

@@ -1,11 +1,12 @@
-import { TSet, withInterface } from 'illa/Type'
+import { RouterState } from 'connected-react-router'
+import { TSet } from 'illa/Type'
 import zipObject from 'lodash/zipObject'
 import { ActionType } from './ActionType'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
 import { getLocale } from './LocaleUtil'
 import { StateLoad } from './StateLoad'
-import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT } from './statics'
+import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT } from './statics'
 import { TAction } from './TAction'
 
 export interface State {
@@ -15,10 +16,9 @@ export interface State {
 	readonly gapiReady: boolean
 	readonly isSignedIn: boolean
 	readonly now: number
-	readonly startWeeks: number
-	readonly endWeeks: number
 	readonly locale: string
 	readonly errors: ReadonlyArray<string>
+	readonly router: RouterState
 }
 
 function makeState(): State {
@@ -29,21 +29,16 @@ function makeState(): State {
 	]
 	return {
 		loadStatesById: {
-			...zipObject(allLoadStates, allLoadStates.map(() => withInterface<StateLoad>({
-				hasError: false,
-				isLoading: false,
-				lastLoaded: -Infinity,
-			}))),
+			...zipObject(allLoadStates, allLoadStates.map(() => StateLoad.Never)),
 		},
 		calendarsById: {},
 		eventsById: {},
 		gapiReady: false,
 		isSignedIn: false,
 		now: Date.now(),
-		startWeeks: INITIAL_START_WEEKS,
-		endWeeks: INITIAL_END_WEEKS,
 		locale: getLocale(),
 		errors: [],
+		router: null as any,
 	}
 }
 
@@ -84,18 +79,6 @@ export function reducerState(state = makeState(), action: TAction): State {
 				...state,
 				now: action.now,
 			}
-		case ActionType.SetInterval:
-			if (action.isFuture) {
-				return {
-					...state,
-					endWeeks: action.weeks,
-				}
-			} else {
-				return {
-					...state,
-					startWeeks: action.weeks,
-				}
-			}
 		case ActionType.SetLocale:
 			return {
 				...state,
@@ -116,10 +99,7 @@ export function reducerState(state = makeState(), action: TAction): State {
 				...state,
 				loadStatesById: {
 					...state.loadStatesById,
-					[action.id]: {
-						...state.loadStatesById[action.id],
-						...action.state,
-					},
+					[action.id]: action.state,
 				},
 			}
 	}

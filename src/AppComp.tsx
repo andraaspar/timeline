@@ -1,62 +1,61 @@
+import { push } from 'connected-react-router'
 import { css } from 'emotion'
-import { TSet, withInterface } from 'illa/Type'
+import { Location as HistoryLocation } from 'history'
+import { withInterface } from 'illa/Type'
+import { DateTime } from 'luxon'
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Redirect, Route, Switch } from 'react-router-dom'
 import { Dispatch } from 'redux'
 import { makeActionClearErrors } from './ActionClearErrors'
 import { makeActionInitGapi } from './ActionInitGapi'
 import { makeActionLoadCalendars } from './ActionLoadCalendars'
-import { makeActionSetInterval } from './ActionSetInterval'
 import { makeActionSetLocale } from './ActionSetLocale'
 import { makeActionSignIn } from './ActionSignIn'
 import { makeActionSignOut } from './ActionSignOut'
 import { buttonCss } from './buttonCss'
 import { CompEventInsert } from './CompEventInsert'
-import { EventListComp } from './EventListComp'
-import { ICalendar } from './ICalendar'
-import { IEvent } from './IEvent'
+import { CompTimeline } from './CompTimeline'
 import { inputCss } from './inputCss'
-import { inputLabelCss } from './inputLabelCss'
+import { inputLabelInlineCss } from './inputLabelInlineCss'
 import { OnMountComp } from './OnMountComp'
+import { makeRouteCreate, makeRouteHome, ROUTE_CREATE, ROUTE_HOME } from './route'
 import { RowComp } from './RowComp'
-import { eventsOrderedFutureSelector, eventsOrderedPastSelector, gotEventsSelector } from './selectors'
+import { gotEventsSelector, routeParamsEndWeeksSelector, routeParamsStartWeeksSelector } from './selectors'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
-import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS } from './statics'
+import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS } from './statics'
 import { TAction } from './TAction'
 
 export interface AppCompPropsFromStore {
 	readonly gapiReady: boolean
 	readonly isSignedIn: boolean
-	readonly orderedPastEvents: ReadonlyArray<IEvent>
-	readonly orderedFutureEvents: ReadonlyArray<IEvent>
 	readonly calendarsLoadState: StateLoad
-	readonly eventsLoadState: StateLoad
-	readonly calendarsById: Readonly<TSet<ICalendar>>
-	readonly endWeeks: number
-	readonly startWeeks: number
 	readonly locale: string
-	readonly now: number
 	readonly errors: ReadonlyArray<string>
 	readonly gotEvents: boolean
+	readonly startWeeks: number
+	readonly endWeeks: number
+	readonly location: HistoryLocation
 }
 export interface AppCompPropsDispatch {
-	signIn: () => void
-	signOut: () => void
-	loadCalendars: (restoreOldOnFailure: boolean) => void
-	initGapi: () => void
-	setEndWeeks: (v: number) => void
-	setStartWeeks: (v: number) => void
-	setLocale: (v: string) => void
-	clearErrors: () => void
+	readonly signIn: () => void
+	readonly signOut: () => void
+	readonly loadCalendars: (restoreOldOnFailure: boolean) => void
+	readonly initGapi: () => void
+	readonly setLocale: (v: string) => void
+	readonly clearErrors: () => void
+	readonly historyPush: (path: string) => void
 }
 export interface AppCompPropsOwn { }
 export interface AppCompProps extends AppCompPropsOwn, AppCompPropsFromStore, AppCompPropsDispatch { }
 export interface AppCompState {
-	startWeeksLastValue: number
-	endWeeksLastValue: number
-	startWeeksStringValue: string
-	endWeeksStringValue: string
+	readonly startWeeks: number
+	readonly endWeeks: number
+	readonly startWeeksStringValue: string
+	readonly endWeeksStringValue: string
+	readonly localeLastSeen: string
+	readonly localeValue: string
 }
 
 const displayName = `AppComp`
@@ -67,20 +66,25 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	constructor(props: AppCompProps) {
 		super(props)
 		this.state = {
-			startWeeksLastValue: NaN,
-			endWeeksLastValue: NaN,
+			startWeeks: NaN,
+			endWeeks: NaN,
 			startWeeksStringValue: '',
 			endWeeksStringValue: '',
+			localeLastSeen: '',
+			localeValue: '',
 		}
 	}
 	// componentWillMount() {}
 	static getDerivedStateFromProps(nextProps: AppCompProps, prevState: AppCompState): AppCompState | null {
+		const { endWeeks, startWeeks, locale } = nextProps
 		return {
 			...prevState,
-			startWeeksLastValue: nextProps.startWeeks,
-			endWeeksLastValue: nextProps.endWeeks,
-			startWeeksStringValue: nextProps.startWeeks !== prevState.startWeeksLastValue ? nextProps.startWeeks + '' : prevState.startWeeksStringValue,
-			endWeeksStringValue: nextProps.endWeeks !== prevState.endWeeksLastValue ? nextProps.endWeeks + '' : prevState.endWeeksStringValue,
+			startWeeks,
+			endWeeks,
+			startWeeksStringValue: startWeeks !== prevState.startWeeks ? startWeeks + '' : prevState.startWeeksStringValue,
+			endWeeksStringValue: endWeeks !== prevState.endWeeks ? endWeeks + '' : prevState.endWeeksStringValue,
+			localeLastSeen: locale,
+			localeValue: prevState.localeLastSeen !== locale ? locale : prevState.localeValue,
 		}
 	}
 	// shouldComponentUpdate(nextProps: AppCompProps, nextState: AppCompState): boolean {}
@@ -113,7 +117,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 				{this.props.gapiReady ?
 					<RowComp distance={5} isVertical>
 						<RowComp distance={5}>
-							<div className={inputLabelCss}>
+							<div className={inputLabelInlineCss}>
 								{process.env.REACT_APP_VERSION}
 							</div>
 							<button
@@ -133,11 +137,11 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 									{`⟳ 📅`}
 								</button>
 							}
-							{this.props.isSignedIn &&
+							<Route path={ROUTE_HOME} render={() => this.props.isSignedIn &&
 								<RowComp distance={5}>
 									<RowComp distance={5}>
 										<div
-											className={inputLabelCss}
+											className={inputLabelInlineCss}
 											title={`Start weeks`}
 										>
 											{`S:`}
@@ -145,7 +149,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 										<input
 											className={inputCss}
 											type='number'
-											max={this.props.endWeeks}
+											max={this.state.endWeeks}
 											step={`any`}
 											value={this.state.startWeeksStringValue}
 											onChange={this.onStartWeeksChanged}
@@ -157,7 +161,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 									</RowComp>
 									<RowComp distance={5}>
 										<div
-											className={inputLabelCss}
+											className={inputLabelInlineCss}
 											title={`End weeks`}
 										>
 											{`E:`}
@@ -165,7 +169,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 										<input
 											className={inputCss}
 											type='number'
-											min={this.props.startWeeks}
+											min={this.state.startWeeks}
 											step={`any`}
 											value={this.state.endWeeksStringValue}
 											onChange={this.onEndWeeksChanged}
@@ -177,6 +181,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 									</RowComp>
 								</RowComp>
 							}
+							/>
 							{this.props.isSignedIn &&
 								<button
 									className={buttonCss}
@@ -192,8 +197,9 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 									<input
 										className={inputCss}
 										type='text'
-										value={this.props.locale}
+										value={this.state.localeValue}
 										onChange={this.onLocaleChanged}
+										onBlur={this.onLocaleBlurred}
 										list='locales'
 										style={{
 											width: 70,
@@ -208,62 +214,34 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 									</datalist>
 								</>
 							}
+							{this.props.isSignedIn && this.props.calendarsLoadState === StateLoad.Loaded &&
+								<button
+									className={buttonCss}
+									type='button'
+									title={`Create`}
+									onClick={this.onCreateClicked}
+								>
+									{`+`}
+								</button>
+							}
 						</RowComp>
 						{this.props.isSignedIn &&
 							<OnMountComp onMount={this.onEventListsMounted}>
-								{this.props.calendarsLoadState.isLoading ?
-									<div>
-										{`Loading calendars...`}
-									</div>
-									:
-									(this.props.calendarsLoadState.hasError ?
-										<div>
-											{`Error loading calendars.`}
-										</div>
-										:
-										<RowComp distance={5} isVertical>
-											<CompEventInsert />
-											<div className={eventsCss}>
-												<div className={eventsPanelCss}>
-													<RowComp distance={5} isVertical>
-														<EventListComp
-															calendarsById={this.props.calendarsById}
-															orderedEvents={this.props.orderedFutureEvents}
-															eventsLoadState={this.props.eventsLoadState}
-															now={this.props.now}
-															locale={this.props.locale}
-														/>
-														<button
-															className={buttonCss}
-															type='button'
-															onClick={this.onLaterClicked}
-														>
-															{`Later`}
-														</button>
-													</RowComp>
-												</div>
-												<div className={eventsPanelCss}>
-													<RowComp distance={5} isVertical>
-														<EventListComp
-															calendarsById={this.props.calendarsById}
-															orderedEvents={this.props.orderedPastEvents}
-															eventsLoadState={this.props.eventsLoadState}
-															now={this.props.now}
-															locale={this.props.locale}
-														/>
-														<button
-															className={buttonCss}
-															type='button'
-															onClick={this.onEarlierClicked}
-														>
-															{`Earlier`}
-														</button>
-													</RowComp>
-												</div>
-											</div>
-										</RowComp>
-									)
-								}
+								<Switch>
+									<Route
+										exact
+										path={`/`}
+										render={history => <Redirect to={makeRouteHome(INITIAL_START_WEEKS, INITIAL_END_WEEKS)} />}
+									/>
+									<Route
+										path={ROUTE_HOME}
+										component={CompTimeline}
+									/>
+									<Route
+										path={ROUTE_CREATE}
+										component={CompEventInsert}
+									/>
+								</Switch>
 							</OnMountComp>
 						}
 					</RowComp>
@@ -300,7 +278,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 		})
 		const value = parseFloat(e.currentTarget.value)
 		if (!isNaN(value)) {
-			this.props.setEndWeeks(value)
+			this.props.historyPush(makeRouteHome(this.state.startWeeks, value))
 		}
 	}
 
@@ -311,38 +289,44 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 		})
 		const value = parseFloat(e.currentTarget.value)
 		if (!isNaN(value)) {
-			this.props.setStartWeeks(value)
+			this.props.historyPush(makeRouteHome(value, this.state.endWeeks))
 		}
 	}
 
 	onStarWeeksBlurred = (e: React.FocusEvent<HTMLInputElement>) => {
 		this.setState({
 			...this.state,
-			startWeeksStringValue: this.props.startWeeks + '',
+			startWeeksStringValue: this.state.startWeeks + '',
 		})
 	}
 
 	onEndWeeksBlurred = (e: React.FocusEvent<HTMLInputElement>) => {
 		this.setState({
 			...this.state,
-			endWeeksStringValue: this.props.endWeeks + '',
+			endWeeksStringValue: this.state.endWeeks + '',
 		})
 	}
 
 	onLocaleChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-		this.props.setLocale(e.currentTarget.value)
+		const locale = e.currentTarget.value
+		this.setState({
+			...this.state,
+			localeValue: locale,
+		})
+		try {
+			const dt = DateTime.fromMillis(Date.now(), { locale })
+			console.log(dt.toLocaleString())
+			this.props.setLocale(dt.locale)
+		} catch (e) {
+			console.error(e)
+		}
 	}
 
-	onEarlierClicked = () => {
-		const diff = this.props.endWeeks - this.props.startWeeks
-		this.props.setStartWeeks(this.props.startWeeks - diff)
-		this.props.setEndWeeks(this.props.endWeeks - diff)
-	}
-
-	onLaterClicked = () => {
-		const diff = this.props.endWeeks - this.props.startWeeks
-		this.props.setStartWeeks(this.props.startWeeks + diff)
-		this.props.setEndWeeks(this.props.endWeeks + diff)
+	onLocaleBlurred = (e: React.FocusEvent<HTMLInputElement>) => {
+		this.setState({
+			...this.state,
+			localeValue: this.props.locale,
+		})
 	}
 
 	onReloadEventsClicked = () => {
@@ -350,12 +334,17 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	}
 
 	onHomeClicked = () => {
-		this.props.setStartWeeks(INITIAL_START_WEEKS)
-		this.props.setEndWeeks(INITIAL_END_WEEKS)
+		// this.props.setStartWeeks(INITIAL_START_WEEKS)
+		// this.props.setEndWeeks(INITIAL_END_WEEKS)
+		this.props.historyPush(makeRouteHome(INITIAL_START_WEEKS, INITIAL_END_WEEKS))
 	}
 
 	onClearErrorsClicked = () => {
 		this.props.clearErrors()
+	}
+
+	onCreateClicked = () => {
+		this.props.historyPush(makeRouteCreate(this.props.startWeeks, this.props.endWeeks))
 	}
 }
 
@@ -363,17 +352,13 @@ export const AppComp = connect(
 	(state: State, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsFromStore>({
 		gapiReady: state.gapiReady,
 		isSignedIn: state.isSignedIn,
-		orderedFutureEvents: eventsOrderedFutureSelector(state),
-		orderedPastEvents: eventsOrderedPastSelector(state),
-		eventsLoadState: state.loadStatesById[LOAD_STATE_EVENTS],
 		calendarsLoadState: state.loadStatesById[LOAD_STATE_CALENDARS],
-		calendarsById: state.calendarsById,
-		endWeeks: state.endWeeks,
-		startWeeks: state.startWeeks,
 		locale: state.locale,
-		now: state.now,
 		errors: state.errors,
 		gotEvents: gotEventsSelector(state),
+		endWeeks: routeParamsEndWeeksSelector(state),
+		startWeeks: routeParamsStartWeeksSelector(state),
+		location: state.router.location,
 	}),
 	(dispatch: Dispatch<TAction>, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsDispatch>({
 		signIn: () => dispatch(makeActionSignIn({})),
@@ -382,33 +367,13 @@ export const AppComp = connect(
 			restoreOldOnFailure,
 		})),
 		initGapi: () => dispatch(makeActionInitGapi({})),
-		setEndWeeks: weeks => dispatch(makeActionSetInterval({
-			isFuture: true,
-			weeks,
-		})),
-		setStartWeeks: weeks => dispatch(makeActionSetInterval({
-			isFuture: false,
-			weeks,
-		})),
 		setLocale: locale => dispatch(makeActionSetLocale({
 			locale,
 		})),
 		clearErrors: () => dispatch(makeActionClearErrors({})),
+		historyPush: path => dispatch(push(path)),
 	}),
 )(AppCompPure)
-
-const eventsCss = css({
-	label: `${displayName}-events`,
-	display: 'flex',
-})
-
-const eventsPanelCss = css({
-	label: `${displayName}-eventsPanel`,
-	flexBasis: '100%',
-	'& + &': {
-		marginLeft: 5,
-	},
-})
 
 const errorsCss = css({
 	label: `${displayName}-errors`,

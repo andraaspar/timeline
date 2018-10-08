@@ -7,7 +7,6 @@ import { ActionRequestEventInsert } from './ActionRequestEventInsert'
 import { makeActionSetCalendars } from './ActionSetCalendars'
 import { makeActionSetEvents } from './ActionSetEvents'
 import { makeActionSetGapiReady } from './ActionSetGapiReady'
-import { ActionSetLocale } from './ActionSetLocale'
 import { makeActionSetSignedIn } from './ActionSetSignedIn'
 import { ActionSetVisibility } from './ActionSetVisibility'
 import { ActionType } from './ActionType'
@@ -15,8 +14,8 @@ import { makeActionUpdateStateLoad } from './ActionUpdateStateLoad'
 import { GAPI } from './GAPI'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
-import { saveLocale } from './LocaleUtil'
 import { gotEventsSelector } from './selectors'
+import { StateLoad } from './StateLoad'
 import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT, MINUTE, SECOND } from './statics'
 
 export function* rootSaga() {
@@ -47,8 +46,6 @@ function* gapiSaga() {
 		yield takeLatest(ActionType.SignOut, signOut)
 		yield takeLatest(ActionType.LoadEventsFromAllCalendars, loadEventsFromAllCalendars)
 		yield takeLatest(ActionType.LoadCalendars, loadCalendars)
-		yield takeLatest(ActionType.SetInterval, setInterval_)
-		yield takeLatest(ActionType.SetLocale, setLocale)
 		yield takeLatest(ActionType.SetVisibility, setVisibility)
 		yield takeLatest(ActionType.RequestEventInsert, requestEventInsert)
 		yield put(makeActionSetGapiReady({
@@ -106,22 +103,6 @@ function* loadCalendars(action: ActionLoadCalendars) {
 	}
 }
 
-function* setInterval_() {
-	yield delay(600)
-	yield put(makeActionLoadEventsFromAllCalendars({
-		restoreOldOnFailure: false,
-	}))
-}
-
-function* setLocale(action: ActionSetLocale) {
-	yield delay(3000)
-	yield saveLocale(action.locale)
-	const gotEvents: boolean = yield select(gotEventsSelector)
-	yield put(makeActionLoadEventsFromAllCalendars({
-		restoreOldOnFailure: gotEvents,
-	}))
-}
-
 function* setVisibility(action: ActionSetVisibility) {
 	if (action.visible && action.hideTime && action.showTime - action.hideTime > 5 * MINUTE) {
 		const gotEvents: boolean = yield select(gotEventsSelector)
@@ -160,31 +141,20 @@ function* showError(e: any) {
 function* loadStart(id: string) {
 	yield put(makeActionUpdateStateLoad({
 		id,
-		state: {
-			hasError: false,
-			isLoading: true,
-		},
+		state: StateLoad.Loading,
 	}))
 }
 
 function* loadSuccess(id: string) {
 	yield put(makeActionUpdateStateLoad({
 		id,
-		state: {
-			hasError: false,
-			isLoading: false,
-			lastLoaded: Date.now(),
-		},
+		state: StateLoad.Loaded,
 	}))
 }
 
 function* loadError(id: string) {
 	yield put(makeActionUpdateStateLoad({
 		id: id,
-		state: {
-			hasError: true,
-			isLoading: false,
-			lastLoaded: Date.now(),
-		},
+		state: StateLoad.Error,
 	}))
 }

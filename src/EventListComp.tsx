@@ -27,35 +27,39 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 	// getDerivedStateFromProps(nextProps: EventListCompProps, prevState: EventListCompState): EventListCompState | null {}
 	// shouldComponentUpdate(nextProps: EventListCompProps, nextState: EventListCompState): boolean {}
 	render() {
-		return (this.props.eventsLoadState.isLoading ?
-			<div>
-				{`Loading events...`}
-			</div>
-			:
-			(this.props.eventsLoadState.hasError ?
-				<div>
-					<em>{`Error loading events.`}</em>
-				</div>
-				:
-				(this.props.orderedEvents.length ?
-					<RowComp distance={5} isVertical>
-						{this.props.orderedEvents.map((event, index, events) =>
-							<EventListItemComp
-								key={event.id}
-								event={event}
-								calendar={this.props.calendarsById[event.calendarId]}
-								now={this.props.now}
-								nextEvent={events.slice(index + 1).find(e => e.isDate == event.isDate) || null}
-								locale={this.props.locale}
-							/>
-						)}
-					</RowComp>
-					:
+		return (
+			<>
+				{this.props.eventsLoadState === StateLoad.Loading &&
 					<div>
-						<em>{`No events.`}</em>
+						{`Loading events...`}
 					</div>
-				)
-			)
+				}
+				{this.props.eventsLoadState === StateLoad.Error &&
+					<div>
+						<em>{`Error loading events.`}</em>
+					</div>
+				}
+				{this.props.eventsLoadState === StateLoad.Loaded &&
+					(this.props.orderedEvents.length ?
+						<RowComp distance={5} isVertical>
+							{this.props.orderedEvents.map((event, index, events) =>
+								<EventListItemComp
+									key={event.id}
+									event={event}
+									calendar={this.props.calendarsById[event.calendarId]}
+									now={this.props.now}
+									nextEvent={events.slice(index + 1).find(e => e.isDate == event.isDate) || null}
+									locale={this.props.locale}
+								/>
+							)}
+						</RowComp>
+						:
+						<div>
+							<em>{`No events.`}</em>
+						</div>
+					)
+				}
+			</>
 		)
 	}
 

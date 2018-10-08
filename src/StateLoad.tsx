@@ -1,6 +1,7 @@
-
-export interface StateLoad {
-	readonly isLoading: boolean
-	readonly hasError: boolean
-	readonly lastLoaded: number
+export enum StateLoad {
+	Never = 'Never',
+	Waiting = 'Waiting',
+	Loading = 'Loading',
+	Error = 'Error',
+	Loaded = 'Loaded',
 }

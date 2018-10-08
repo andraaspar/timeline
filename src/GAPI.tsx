@@ -1,6 +1,7 @@
 import { makeActionSetSignedIn } from './ActionSetSignedIn'
 import { ICalendar } from './ICalendar'
 import { IEvent, IEventContext, makeIEventFromCalendarEvent } from './IEvent'
+import { routeParamsEndWeeksSelector, routeParamsStartWeeksSelector } from './selectors'
 import { WEEK } from './statics'
 import { store } from './store'
 
@@ -75,7 +76,9 @@ export namespace GAPI {
 
 	export function loadEventsFromCalendar(calendarId: string, events: ReadonlyArray<IEvent> = [], pageToken?: string) {
 		return new Promise<IEvent[]>((resolve, reject) => {
-			const { endWeeks, startWeeks, locale } = store.getState()!
+			const state = store.getState()!
+			const startWeeks = routeParamsStartWeeksSelector(state)
+			const endWeeks = routeParamsEndWeeksSelector(state)
 			gapi.client.calendar.events.list({
 				calendarId,
 				timeMin: (new Date(Date.now() + startWeeks * WEEK)).toISOString(),
@@ -88,7 +91,7 @@ export namespace GAPI {
 				.then(response => {
 					const options: IEventContext = {
 						calendarId,
-						locale,
+						locale: state.locale,
 					}
 					const newEvents = [...events, ...response.result.items.map(_ => makeIEventFromCalendarEvent(options, _))]
 					if (response.result.nextPageToken) {
