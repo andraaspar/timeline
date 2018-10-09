@@ -1,31 +1,33 @@
 import { TSet } from 'illa/Type'
 import React, { Component } from 'react'
-import { EventListItemComp } from './EventListItemComp'
+import { CompEventListItem } from './CompEventListItem'
+import { CompRow } from './CompRow'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
-import { RowComp } from './RowComp'
 import { StateLoad } from './StateLoad'
 
-export interface EventListCompProps {
+export interface CompEventListProps {
 	readonly calendarsById: Readonly<TSet<ICalendar>>
 	readonly orderedEvents: ReadonlyArray<IEvent>
 	readonly eventsLoadState: StateLoad
 	readonly now: number
 	readonly locale: string
 }
-export interface EventListCompState { }
-export interface EventListCompSnapshot { }
+export interface CompEventListState { }
+export interface CompEventListSnapshot { }
 
-export class EventListComp extends Component<EventListCompProps, EventListCompState> {
-	static displayName = __filename
+const displayName = `CompEventList`
 
-	// constructor(props: EventListCompProps) {
+export class CompEventList extends Component<CompEventListProps, CompEventListState> {
+	static displayName = displayName
+
+	// constructor(props: CompEventListProps) {
 	// 	super(props)
 	// 	// this.state = {}
 	// }
 	// componentWillMount() {}
-	// getDerivedStateFromProps(nextProps: EventListCompProps, prevState: EventListCompState): EventListCompState | null {}
-	// shouldComponentUpdate(nextProps: EventListCompProps, nextState: EventListCompState): boolean {}
+	// getDerivedStateFromProps(nextProps: CompEventListProps, prevState: CompEventListState): CompEventListState | null {}
+	// shouldComponentUpdate(nextProps: CompEventListProps, nextState: CompEventListState): boolean {}
 	render() {
 		return (
 			<>
@@ -41,9 +43,9 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 				}
 				{this.props.eventsLoadState === StateLoad.Loaded &&
 					(this.props.orderedEvents.length ?
-						<RowComp distance={5} isVertical>
+						<CompRow distance={5} isVertical>
 							{this.props.orderedEvents.map((event, index, events) =>
-								<EventListItemComp
+								<CompEventListItem
 									key={event.id}
 									event={event}
 									calendar={this.props.calendarsById[event.calendarId]}
@@ -52,7 +54,7 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 									locale={this.props.locale}
 								/>
 							)}
-						</RowComp>
+						</CompRow>
 						:
 						<div>
 							<em>{`No events.`}</em>
@@ -64,7 +66,7 @@ export class EventListComp extends Component<EventListCompProps, EventListCompSt
 	}
 
 	// componentDidMount() {}
-	// getSnapshotBeforeUpdate(prevProps: EventListCompProps, prevState: EventListCompState): EventListCompSnapshot {}
-	// componentDidUpdate(prevProps: EventListCompProps, prevState: EventListCompState, snapshot: EventListCompSnapshot) {}
+	// getSnapshotBeforeUpdate(prevProps: CompEventListProps, prevState: CompEventListState): CompEventListSnapshot {}
+	// componentDidUpdate(prevProps: CompEventListProps, prevState: CompEventListState, snapshot: CompEventListSnapshot) {}
 	// componentWillUnmount() {}
 }

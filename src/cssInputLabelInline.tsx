@@ -1,8 +1,8 @@
 import { css, cx } from 'emotion'
-import { inputLabelCss } from './inputLabelCss'
+import { cssInputLabel } from './cssInputLabel'
 
-export const inputLabelInlineCss = cx(
-	inputLabelCss,
+export const cssInputLabelInline = cx(
+	cssInputLabel,
 	css({
 		label: `inputLabelInline`,
 		whiteSpace: 'nowrap',

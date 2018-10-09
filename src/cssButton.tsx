@@ -1,6 +1,6 @@
 import { css } from 'emotion'
 
-export const buttonCss = css({
+export const cssButton = css({
 	label: `buttonCss`,
 	display: 'block',
 	border: `1px solid rgba(0, 0, 0, .2)`,

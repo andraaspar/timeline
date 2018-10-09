@@ -5,15 +5,15 @@ import React, { ChangeEvent, Component } from 'react'
 import { connect, DispatchProp } from 'react-redux'
 import { RouteComponentProps } from 'react-router-dom'
 import { makeActionRequestEventInsert } from './ActionRequestEventInsert'
-import { buttonCss } from './buttonCss'
+import { CompEventListItem } from './CompEventListItem'
+import { CompRow } from './CompRow'
+import { cssButton } from './cssButton'
+import { cssInput } from './cssInput'
+import { cssInputLabel } from './cssInputLabel'
 import { eventInputFromString } from './EventInput_Methods'
-import { EventListItemComp } from './EventListItemComp'
 import { ICalendar } from './ICalendar'
 import { IEvent, makeIEventFromEventInput } from './IEvent'
-import { inputCss } from './inputCss'
-import { inputLabelCss } from './inputLabelCss'
 import { makeRouteHome } from './route'
-import { RowComp } from './RowComp'
 import { routeParamsEndWeeksSelector, routeParamsStartWeeksSelector } from './selectors'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
@@ -79,13 +79,13 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 	render() {
 		const disabled = this.props.loadState === StateLoad.Loading || this.state.justSaved
 		return (
-			<RowComp distance={5} isVertical>
-				<div className={inputLabelCss}>
+			<CompRow distance={5} isVertical>
+				<div className={cssInputLabel}>
 					{`Summary:`}
 				</div>
 				<div>
 					<input
-						className={inputCss}
+						className={cssInput}
 						type='text'
 						value={this.state.summary}
 						onChange={this.onSummaryValueChanged}
@@ -93,12 +93,12 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						placeholder={`What’s happening`}
 					/>
 				</div>
-				<div className={inputLabelCss}>
+				<div className={cssInputLabel}>
 					{`Start:`}
 				</div>
 				<div>
 					<input
-						className={inputCss}
+						className={cssInput}
 						type='text'
 						value={this.state.start}
 						onChange={this.onStartValueChanged}
@@ -106,12 +106,12 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						placeholder={`16:45 or 08-23 or 2018-08-23 16:45+p1wt2h`}
 					/>
 				</div>
-				<div className={inputLabelCss}>
+				<div className={cssInputLabel}>
 					{`End:`}
 				</div>
 				<div>
 					<input
-						className={inputCss}
+						className={cssInput}
 						type='text'
 						value={this.state.end}
 						onChange={this.onEndValueChanged}
@@ -120,7 +120,7 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 					/>
 				</div>
 				{this.state.event &&
-					<EventListItemComp
+					<CompEventListItem
 						calendar={this.props.calendarsById[this.state.calendarId]}
 						event={this.state.event}
 						nextEvent={null}
@@ -131,7 +131,7 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 				}
 				{this.state.eventInput &&
 					<button
-						className={buttonCss}
+						className={cssButton}
 						type='button'
 						onClick={this.onSaveEventClicked}
 						disabled={disabled}
@@ -139,7 +139,7 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						{`Save event`}
 					</button>
 				}
-			</RowComp>
+			</CompRow>
 		)
 	}
 	// componentDidMount() {}

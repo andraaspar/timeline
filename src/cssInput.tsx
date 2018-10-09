@@ -1,6 +1,6 @@
 import { css } from 'emotion'
 
-export const inputCss = css({
+export const cssInput = css({
 	label: `inputCss`,
 	display: 'block',
 	width: `100%`,

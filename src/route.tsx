@@ -1,4 +1,4 @@
-import { url } from './URLUtil'
+import { url } from './UtilURL'
 export const ROUTE_HOME = '/home'
 export const ROUTE_CREATE = '/create'
 

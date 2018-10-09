@@ -4,12 +4,12 @@ import { TSet, withInterface } from 'illa/Type'
 import React, { Component } from 'react'
 import { connect, DispatchProp } from 'react-redux'
 import { makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars'
-import { buttonCss } from './buttonCss'
-import { EventListComp } from './EventListComp'
+import { CompEventList } from './CompEventList'
+import { CompRow } from './CompRow'
+import { cssButton } from './cssButton'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
 import { makeRouteHome } from './route'
-import { RowComp } from './RowComp'
 import { eventsOrderedFutureSelector, eventsOrderedPastSelector, gotEventsSelector, routeParamsEndWeeksSelector, routeParamsStartWeeksSelector } from './selectors'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
@@ -56,10 +56,10 @@ class CompTimelinePure extends Component<CompTimelineProps, CompTimelineState/* 
 					</div>
 				}
 				{this.props.calendarsLoadState === StateLoad.Loaded &&
-					<div className={eventsCss}>
-						<div className={eventsPanelCss}>
-							<RowComp distance={5} isVertical>
-								<EventListComp
+					<div className={cssEvents}>
+						<div className={cssEventsPanel}>
+							<CompRow distance={5} isVertical>
+								<CompEventList
 									calendarsById={this.props.calendarsById}
 									orderedEvents={this.props.orderedFutureEvents}
 									eventsLoadState={this.props.eventsLoadState}
@@ -67,17 +67,17 @@ class CompTimelinePure extends Component<CompTimelineProps, CompTimelineState/* 
 									locale={this.props.locale}
 								/>
 								<button
-									className={buttonCss}
+									className={cssButton}
 									type='button'
 									onClick={this.onLaterClicked}
 								>
 									{`Later`}
 								</button>
-							</RowComp>
+							</CompRow>
 						</div>
-						<div className={eventsPanelCss}>
-							<RowComp distance={5} isVertical>
-								<EventListComp
+						<div className={cssEventsPanel}>
+							<CompRow distance={5} isVertical>
+								<CompEventList
 									calendarsById={this.props.calendarsById}
 									orderedEvents={this.props.orderedPastEvents}
 									eventsLoadState={this.props.eventsLoadState}
@@ -85,13 +85,13 @@ class CompTimelinePure extends Component<CompTimelineProps, CompTimelineState/* 
 									locale={this.props.locale}
 								/>
 								<button
-									className={buttonCss}
+									className={cssButton}
 									type='button'
 									onClick={this.onEarlierClicked}
 								>
 									{`Earlier`}
 								</button>
-							</RowComp>
+							</CompRow>
 						</div>
 					</div>
 				}
@@ -140,12 +140,12 @@ export const CompTimeline = connect(
 	}),
 )(CompTimelinePure)
 
-const eventsCss = css({
+const cssEvents = css({
 	label: `${displayName}-events`,
 	display: 'flex',
 })
 
-const eventsPanelCss = css({
+const cssEventsPanel = css({
 	label: `${displayName}-eventsPanel`,
 	flexBasis: '100%',
 	'& + &': {

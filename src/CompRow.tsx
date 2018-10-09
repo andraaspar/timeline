@@ -4,7 +4,7 @@ import React, { Children, Component, ReactElement } from 'react'
 import { TTopRightBottomLeft, TXY } from './TTopRightBottomLeft'
 import { normalizeXY, topRightBottomLeftToCssValue } from './TTopRightBottomLeft_Methods'
 
-export interface RowCompProps {
+export interface CompRowProps {
 	inset?: TTopRightBottomLeft
 	distance?: TXY
 	isVertical?: boolean
@@ -13,39 +13,41 @@ export interface RowCompProps {
 	outerClass?: string
 	itemClass?: string
 }
-export interface RowCompState { }
-export interface RowCompSnap { }
+export interface CompRowState { }
+export interface CompRowSnap { }
 
-export class RowComp extends Component<RowCompProps, RowCompState/* , RowCompSnap */> {
-	static displayName = `RowComp`
+const displayName = `CompRow`
 
-	// constructor(props: RowCompProps) {
+export class CompRow extends Component<CompRowProps, CompRowState/* , CompRowSnap */> {
+	static displayName = displayName
+
+	// constructor(props: CompRowProps) {
 	// 	super(props)
 	// 	// this.state = {}
 	// }
-	// getDerivedStateFromProps(nextProps: RowCompProps, prevState: RowCompState): RowCompState | null {}
+	// getDerivedStateFromProps(nextProps: CompRowProps, prevState: CompRowState): CompRowState | null {}
 	// componentWillMount() {}
-	// shouldComponentUpdate(nextProps: RowCompProps, nextState: RowCompState): boolean {}
+	// shouldComponentUpdate(nextProps: CompRowProps, nextState: CompRowState): boolean {}
 	render() {
 		const distance = normalizeXY(this.props.distance)
 		
 		const outerClass = cx(
 			this.props.outerClass,
 			css({
-				label: RowComp.displayName,
+				label: displayName,
 				overflow: 'hidden',
 				padding: topRightBottomLeftToCssValue(this.props.inset),
 				textAlign: this.props.outerTextAlign,
 			}),
 		)
 		const innerClass = css({
-			label: `${RowComp.displayName}-inner`,
+			label: `${displayName}-inner`,
 			margin: `-${distance.y} 0 0 -${distance.x}`,
 		})
 		const itemClass = cx(
 			this.props.itemClass,
 			css({
-				label: `${RowComp.displayName}-item`,
+				label: `${displayName}-item`,
 				display: this.props.isVertical ? 'block' : 'inline-block',
 				verticalAlign: 'top',
 				textAlign: this.props.itemTextAlign,
@@ -69,7 +71,7 @@ export class RowComp extends Component<RowCompProps, RowCompState/* , RowCompSna
 		)
 	}
 	// componentDidMount() {}
-	// getSnapshotBeforeUpdate(prevProps: RowCompProps, prevState: RowCompState): RowCompSnap {}
-	// componentDidUpdate(prevProps: RowCompProps, prevState: RowCompState, snapshot: RowCompSnap) {}
+	// getSnapshotBeforeUpdate(prevProps: CompRowProps, prevState: CompRowState): CompRowSnap {}
+	// componentDidUpdate(prevProps: CompRowProps, prevState: CompRowState, snapshot: CompRowSnap) {}
 	// componentWillUnmount() {}
 }

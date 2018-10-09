@@ -5,7 +5,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import 'window-onerror-handler'
-import { AppComp } from './AppComp'
+import { CompApp } from './CompApp'
 import './index.css'
 import { unregister } from './registerServiceWorker'
 import { history, store } from './store'
@@ -16,7 +16,7 @@ Settings.throwOnInvalid = true
 ReactDOM.render(
 	<Provider store={store}>
 		<ConnectedRouter history={history}>
-			<AppComp />
+			<CompApp />
 		</ConnectedRouter>
 	</Provider>,
 	document.getElementById('root')

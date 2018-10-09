@@ -12,20 +12,20 @@ import { makeActionLoadCalendars } from './ActionLoadCalendars'
 import { makeActionSetLocale } from './ActionSetLocale'
 import { makeActionSignIn } from './ActionSignIn'
 import { makeActionSignOut } from './ActionSignOut'
-import { buttonCss } from './buttonCss'
 import { CompEventInsert } from './CompEventInsert'
+import { CompOnMount } from './CompOnMount'
+import { CompRow } from './CompRow'
 import { CompTimeline } from './CompTimeline'
-import { inputCss } from './inputCss'
-import { inputLabelInlineCss } from './inputLabelInlineCss'
-import { OnMountComp } from './OnMountComp'
+import { cssButton } from './cssButton'
+import { cssInput } from './cssInput'
+import { cssInputLabelInline } from './cssInputLabelInline'
 import { makeRouteCreate, makeRouteHome, ROUTE_CREATE, ROUTE_HOME } from './route'
-import { RowComp } from './RowComp'
 import { gotEventsSelector, routeParamsEndWeeksSelector, routeParamsStartWeeksSelector } from './selectors'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
 import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS } from './statics'
 
-export interface AppCompPropsFromStore {
+export interface CompAppPropsFromStore {
 	readonly gapiReady: boolean
 	readonly isSignedIn: boolean
 	readonly calendarsLoadState: StateLoad
@@ -36,9 +36,9 @@ export interface AppCompPropsFromStore {
 	readonly endWeeks: number
 	readonly location: HistoryLocation
 }
-export interface AppCompPropsOwn { }
-export interface AppCompProps extends AppCompPropsOwn, AppCompPropsFromStore, DispatchProp { }
-export interface AppCompState {
+export interface CompAppPropsOwn { }
+export interface CompAppProps extends CompAppPropsOwn, CompAppPropsFromStore, DispatchProp { }
+export interface CompAppState {
 	readonly startWeeks: number
 	readonly endWeeks: number
 	readonly startWeeksStringValue: string
@@ -47,12 +47,12 @@ export interface AppCompState {
 	readonly localeValue: string
 }
 
-const displayName = `AppComp`
+const displayName = `CompApp`
 
-class AppCompPure extends Component<AppCompProps, AppCompState> {
+class CompAppPure extends Component<CompAppProps, CompAppState> {
 	static displayName = displayName
 
-	constructor(props: AppCompProps) {
+	constructor(props: CompAppProps) {
 		super(props)
 		this.state = {
 			startWeeks: NaN,
@@ -64,7 +64,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 		}
 	}
 	// componentWillMount() {}
-	static getDerivedStateFromProps(nextProps: AppCompProps, prevState: AppCompState): AppCompState | null {
+	static getDerivedStateFromProps(nextProps: CompAppProps, prevState: CompAppState): CompAppState | null {
 		const { endWeeks, startWeeks, locale } = nextProps
 		return {
 			...prevState,
@@ -76,27 +76,27 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 			localeValue: prevState.localeLastSeen !== locale ? locale : prevState.localeValue,
 		}
 	}
-	// shouldComponentUpdate(nextProps: AppCompProps, nextState: AppCompState): boolean {}
+	// shouldComponentUpdate(nextProps: CompAppProps, nextState: CompAppState): boolean {}
 	render() {
-		// console.log(`--- AppComp redraw ---`)
+		// console.log(`--- CompApp redraw ---`)
 		return (
-			<RowComp inset={5} distance={5} isVertical>
+			<CompRow inset={5} distance={5} isVertical>
 				{this.props.errors.length > 0 &&
-					<div className={errorsCss}>
-						<div className={errorsInnerCss}>
-							<RowComp distance={5} isVertical>
+					<div className={cssErrors}>
+						<div className={cssErrorsInner}>
+							<CompRow distance={5} isVertical>
 								{this.props.errors.map((e, index) =>
-									<div key={index} className={errorCss}>
+									<div key={index} className={cssError}>
 										{e}
 									</div>
 								)}
-							</RowComp>
+							</CompRow>
 						</div>
 					</div>
 				}
 				{this.props.errors.length > 0 &&
 					<button
-						className={buttonCss}
+						className={cssButton}
 						type='button'
 						onClick={this.onClearErrorsClicked}
 					>
@@ -104,13 +104,13 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 					</button>
 				}
 				{this.props.gapiReady ?
-					<RowComp distance={5} isVertical>
-						<RowComp distance={5}>
-							<div className={inputLabelInlineCss}>
+					<CompRow distance={5} isVertical>
+						<CompRow distance={5}>
+							<div className={cssInputLabelInline}>
 								{process.env.REACT_APP_VERSION}
 							</div>
 							<button
-								className={buttonCss}
+								className={cssButton}
 								type='button'
 								onClick={this.onSignInClicked}
 							>
@@ -118,7 +118,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 							</button>
 							{this.props.isSignedIn &&
 								<button
-									className={buttonCss}
+									className={cssButton}
 									type='button'
 									title={`Reload events`}
 									onClick={this.onReloadEventsClicked}
@@ -127,16 +127,16 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 								</button>
 							}
 							<Route path={ROUTE_HOME} render={() => this.props.isSignedIn &&
-								<RowComp distance={5}>
-									<RowComp distance={5}>
+								<CompRow distance={5}>
+									<CompRow distance={5}>
 										<div
-											className={inputLabelInlineCss}
+											className={cssInputLabelInline}
 											title={`Start weeks`}
 										>
 											{`S:`}
 										</div>
 										<input
-											className={inputCss}
+											className={cssInput}
 											type='number'
 											max={this.state.endWeeks}
 											step={`any`}
@@ -147,16 +147,16 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 												width: 50,
 											}}
 										/>
-									</RowComp>
-									<RowComp distance={5}>
+									</CompRow>
+									<CompRow distance={5}>
 										<div
-											className={inputLabelInlineCss}
+											className={cssInputLabelInline}
 											title={`End weeks`}
 										>
 											{`E:`}
 										</div>
 										<input
-											className={inputCss}
+											className={cssInput}
 											type='number'
 											min={this.state.startWeeks}
 											step={`any`}
@@ -167,13 +167,13 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 												width: 50,
 											}}
 										/>
-									</RowComp>
-								</RowComp>
+									</CompRow>
+								</CompRow>
 							}
 							/>
 							{this.props.isSignedIn &&
 								<button
-									className={buttonCss}
+									className={cssButton}
 									type='button'
 									title={`Home`}
 									onClick={this.onHomeClicked}
@@ -184,7 +184,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 							{this.props.isSignedIn &&
 								<>
 									<input
-										className={inputCss}
+										className={cssInput}
 										type='text'
 										value={this.state.localeValue}
 										onChange={this.onLocaleChanged}
@@ -205,7 +205,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 							}
 							{this.props.isSignedIn && this.props.calendarsLoadState === StateLoad.Loaded &&
 								<button
-									className={buttonCss}
+									className={cssButton}
 									type='button'
 									title={`Create`}
 									onClick={this.onCreateClicked}
@@ -213,9 +213,9 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 									{`+`}
 								</button>
 							}
-						</RowComp>
+						</CompRow>
 						{this.props.isSignedIn &&
-							<OnMountComp onMount={this.onEventListsMounted}>
+							<CompOnMount onMount={this.onEventListsMounted}>
 								<Switch>
 									<Route
 										exact
@@ -231,21 +231,21 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 										component={CompEventInsert}
 									/>
 								</Switch>
-							</OnMountComp>
+							</CompOnMount>
 						}
-					</RowComp>
+					</CompRow>
 					:
 					<div>{`Loading Google API...`}</div>
 				}
-			</RowComp>
+			</CompRow>
 		)
 	}
 
 	componentDidMount() {
 		this.props.dispatch(makeActionInitGapi())
 	}
-	// getSnapshotBeforeUpdate(prevProps: AppCompProps, prevState: AppCompState): AppCompSnapshot {}
-	// componentDidUpdate(prevProps: AppCompProps, prevState: AppCompState, snapshot: AppCompSnapshot) {}
+	// getSnapshotBeforeUpdate(prevProps: CompAppProps, prevState: CompAppState): CompAppSnapshot {}
+	// componentDidUpdate(prevProps: CompAppProps, prevState: CompAppState, snapshot: CompAppSnapshot) {}
 	// componentWillUnmount() {}
 
 	onEventListsMounted = () => {
@@ -343,8 +343,8 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	}
 }
 
-export const AppComp = connect(
-	(state: State/* , ownProps: AppCompPropsOwn */) => withInterface<AppCompPropsFromStore>({
+export const CompApp = connect(
+	(state: State/* , ownProps: CompAppPropsOwn */) => withInterface<CompAppPropsFromStore>({
 		gapiReady: state.gapiReady,
 		isSignedIn: state.isSignedIn,
 		calendarsLoadState: state.loadStatesById[LOAD_STATE_CALENDARS],
@@ -355,9 +355,9 @@ export const AppComp = connect(
 		startWeeks: routeParamsStartWeeksSelector(state),
 		location: state.router.location,
 	}),
-)(AppCompPure)
+)(CompAppPure)
 
-const errorsCss = css({
+const cssErrors = css({
 	label: `${displayName}-errors`,
 	background: `#eee`,
 	position: 'relative',
@@ -373,14 +373,14 @@ const errorsCss = css({
 	},
 })
 
-const errorsInnerCss = css({
+const cssErrorsInner = css({
 	label: `${displayName}-errorsInner`,
 	overflow: 'auto',
 	maxHeight: 200,
 	padding: 5,
 })
 
-const errorCss = css({
+const cssError = css({
 	label: `${displayName}-error`,
 	border: `1px solid red`,
 	color: `red`,

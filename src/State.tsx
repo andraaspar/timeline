@@ -4,10 +4,10 @@ import zipObject from 'lodash/zipObject'
 import { ActionType } from './ActionType'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
-import { getLocale } from './LocaleUtil'
 import { StateLoad } from './StateLoad'
 import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT } from './statics'
 import { TAction } from './TAction'
+import { getLocale } from './UtilLocale'
 
 export interface State {
 	readonly loadStatesById: Readonly<TSet<StateLoad>>
