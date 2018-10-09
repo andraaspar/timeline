@@ -2,9 +2,8 @@ import { get } from 'illa/FunctionUtil'
 import { TSet, withInterface } from 'illa/Type'
 import { Settings } from 'luxon'
 import React, { ChangeEvent, Component } from 'react'
-import { connect } from 'react-redux'
+import { connect, DispatchProp } from 'react-redux'
 import { RouteComponentProps } from 'react-router-dom'
-import { Dispatch } from 'redux'
 import { makeActionRequestEventInsert } from './ActionRequestEventInsert'
 import { buttonCss } from './buttonCss'
 import { eventInputFromString } from './EventInput_Methods'
@@ -19,7 +18,6 @@ import { routeParamsEndWeeksSelector, routeParamsStartWeeksSelector } from './se
 import { State } from './State'
 import { StateLoad } from './StateLoad'
 import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_INSERT_EVENT } from './statics'
-import { TAction } from './TAction'
 
 export interface CompEventInsertPropsFromStore {
 	readonly loadState: StateLoad
@@ -29,11 +27,8 @@ export interface CompEventInsertPropsFromStore {
 	readonly startWeeks: number
 	readonly endWeeks: number
 }
-export interface CompEventInsertPropsDispatch {
-	readonly insertEvent: (calendarId: string, e: gapi.client.calendar.EventInput) => void
-}
 export interface CompEventInsertPropsOwn extends RouteComponentProps { }
-export interface CompEventInsertProps extends CompEventInsertPropsOwn, CompEventInsertPropsFromStore, CompEventInsertPropsDispatch { }
+export interface CompEventInsertProps extends CompEventInsertPropsOwn, CompEventInsertPropsFromStore, DispatchProp { }
 export interface CompEventInsertState {
 	readonly start: string
 	readonly end: string
@@ -189,26 +184,21 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 
 	onSaveEventClicked = () => {
 		if (this.state.eventInput) {
-			this.props.insertEvent(this.state.calendarId, this.state.eventInput)
+			this.props.dispatch(makeActionRequestEventInsert({
+				calendarId: this.state.calendarId,
+				event: this.state.eventInput,
+			}))
 		}
 	}
 }
 
 export const CompEventInsert = connect(
-	(state: State, ownProps: CompEventInsertPropsOwn) => withInterface<CompEventInsertPropsFromStore>({
+	(state: State/* , ownProps: CompEventInsertPropsOwn */) => withInterface<CompEventInsertPropsFromStore>({
 		calendarsById: state.calendarsById,
 		locale: state.locale,
 		now: state.now,
 		loadState: state.loadStatesById[LOAD_STATE_INSERT_EVENT],
 		endWeeks: routeParamsEndWeeksSelector(state),
 		startWeeks: routeParamsStartWeeksSelector(state),
-	}),
-	(dispatch: Dispatch<TAction>, ownProps: CompEventInsertPropsOwn) => withInterface<CompEventInsertPropsDispatch>({
-		insertEvent: (calendarId, event) => {
-			dispatch(makeActionRequestEventInsert({
-				calendarId,
-				event,
-			}))
-		},
 	}),
 )(CompEventInsertPure)

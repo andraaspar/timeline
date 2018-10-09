@@ -5,7 +5,7 @@ export interface ActionSignIn {
 	readonly type: ActionType.SignIn
 }
 
-export function makeActionSignIn(o: TOmit<ActionSignIn, 'type'>): ActionSignIn {
+export function makeActionSignIn(o?: TOmit<ActionSignIn, 'type'>): ActionSignIn {
 	return {
 		...o,
 		type: ActionType.SignIn,

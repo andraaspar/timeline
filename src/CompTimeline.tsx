@@ -2,8 +2,7 @@ import { push } from 'connected-react-router'
 import { css } from 'emotion'
 import { TSet, withInterface } from 'illa/Type'
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { connect, DispatchProp } from 'react-redux'
 import { makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars'
 import { buttonCss } from './buttonCss'
 import { EventListComp } from './EventListComp'
@@ -15,7 +14,6 @@ import { eventsOrderedFutureSelector, eventsOrderedPastSelector, gotEventsSelect
 import { State } from './State'
 import { StateLoad } from './StateLoad'
 import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS } from './statics'
-import { TAction } from './TAction'
 
 export interface CompTimelinePropsFromStore {
 	readonly isSignedIn: boolean
@@ -30,12 +28,8 @@ export interface CompTimelinePropsFromStore {
 	readonly startWeeks: number
 	readonly endWeeks: number
 }
-export interface CompTimelinePropsDispatch {
-	loadEventsFromAllCalendars: () => void
-	historyPush: (path: string) => void
-}
 export interface CompTimelinePropsOwn { }
-export interface CompTimelineProps extends CompTimelinePropsOwn, CompTimelinePropsFromStore, CompTimelinePropsDispatch { }
+export interface CompTimelineProps extends CompTimelinePropsOwn, CompTimelinePropsFromStore, DispatchProp { }
 export interface CompTimelineState { }
 export interface CompTimelineSnap { }
 
@@ -44,22 +38,9 @@ const displayName = 'CompTimeline'
 class CompTimelinePure extends Component<CompTimelineProps, CompTimelineState/* , CompTimelineSnap */> {
 	static displayName = displayName
 
-	// constructor(props: CompTimelineProps) {
-	// 	super(props)
-	// 	this.state = {
-	// 		endWeeks: INITIAL_END_WEEKS,
-	// 		startWeeks: INITIAL_START_WEEKS,
-	// 	}
-	// }
+	// constructor(props: CompTimelineProps) {}
 	// componentWillMount() {}
-	// static getDerivedStateFromProps(nextProps: CompTimelineProps, prevState: CompTimelineState): CompTimelineState | null {
-	// 	const { endWeeks, startWeeks } = nextProps.match.params
-	// 	return {
-	// 		...prevState,
-	// 		startWeeks: numberFromParam(startWeeks, INITIAL_START_WEEKS),
-	// 		endWeeks: numberFromParam(endWeeks, INITIAL_END_WEEKS),
-	// 	}
-	// }
+	// static getDerivedStateFromProps(nextProps: CompTimelineProps, prevState: CompTimelineState): CompTimelineState | null {}
 	// shouldComponentUpdate(nextProps: CompTimelineProps, nextState: CompTimelineState): boolean {}
 	render() {
 		return (
@@ -118,29 +99,33 @@ class CompTimelinePure extends Component<CompTimelineProps, CompTimelineState/* 
 		)
 	}
 	componentDidMount() {
-		this.props.loadEventsFromAllCalendars()
+		this.props.dispatch(makeActionLoadEventsFromAllCalendars({
+			restoreOldOnFailure: false,
+		}))
 	}
 	// getSnapshotBeforeUpdate(prevProps: CompTimelineProps, prevState: CompTimelineState): CompTimelineSnap {}
 	componentDidUpdate(prevProps: CompTimelineProps, prevState: CompTimelineState, snapshot: CompTimelineSnap) {
 		if (prevProps.endWeeks !== this.props.endWeeks || prevProps.startWeeks !== this.props.startWeeks) {
-			this.props.loadEventsFromAllCalendars()
+			this.props.dispatch(makeActionLoadEventsFromAllCalendars({
+				restoreOldOnFailure: false,
+			}))
 		}
 	}
 	// componentWillUnmount() {}
 
 	onEarlierClicked = () => {
 		const diff = this.props.endWeeks - this.props.startWeeks
-		this.props.historyPush(makeRouteHome(this.props.startWeeks - diff, this.props.endWeeks - diff))
+		this.props.dispatch(push(makeRouteHome(this.props.startWeeks - diff, this.props.endWeeks - diff)))
 	}
 
 	onLaterClicked = () => {
 		const diff = this.props.endWeeks - this.props.startWeeks
-		this.props.historyPush(makeRouteHome(this.props.startWeeks + diff, this.props.endWeeks + diff))
+		this.props.dispatch(push(makeRouteHome(this.props.startWeeks + diff, this.props.endWeeks + diff)))
 	}
 }
 
 export const CompTimeline = connect(
-	(state: State, ownProps: CompTimelinePropsOwn) => withInterface<CompTimelinePropsFromStore>({
+	(state: State/* , ownProps: CompTimelinePropsOwn */) => withInterface<CompTimelinePropsFromStore>({
 		calendarsLoadState: state.loadStatesById[LOAD_STATE_CALENDARS],
 		isSignedIn: state.isSignedIn,
 		calendarsById: state.calendarsById,
@@ -152,12 +137,6 @@ export const CompTimeline = connect(
 		gotEvents: gotEventsSelector(state),
 		endWeeks: routeParamsEndWeeksSelector(state),
 		startWeeks: routeParamsStartWeeksSelector(state),
-	}),
-	(dispatch: Dispatch<TAction>, ownProps: CompTimelinePropsOwn) => withInterface<CompTimelinePropsDispatch>({
-		loadEventsFromAllCalendars: () => dispatch(makeActionLoadEventsFromAllCalendars({
-			restoreOldOnFailure: false,
-		})),
-		historyPush: path => dispatch(push(path)),
 	}),
 )(CompTimelinePure)
 

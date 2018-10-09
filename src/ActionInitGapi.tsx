@@ -5,7 +5,7 @@ export interface ActionInitGapi {
 	readonly type: ActionType.InitGapi
 }
 
-export function makeActionInitGapi(o: TOmit<ActionInitGapi, 'type'>): ActionInitGapi {
+export function makeActionInitGapi(o?: TOmit<ActionInitGapi, 'type'>): ActionInitGapi {
 	return {
 		...o,
 		type: ActionType.InitGapi,

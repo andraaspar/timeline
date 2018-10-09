@@ -4,9 +4,8 @@ import { Location as HistoryLocation } from 'history'
 import { withInterface } from 'illa/Type'
 import { DateTime } from 'luxon'
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
+import { connect, DispatchProp } from 'react-redux'
 import { Redirect, Route, Switch } from 'react-router-dom'
-import { Dispatch } from 'redux'
 import { makeActionClearErrors } from './ActionClearErrors'
 import { makeActionInitGapi } from './ActionInitGapi'
 import { makeActionLoadCalendars } from './ActionLoadCalendars'
@@ -25,7 +24,6 @@ import { gotEventsSelector, routeParamsEndWeeksSelector, routeParamsStartWeeksSe
 import { State } from './State'
 import { StateLoad } from './StateLoad'
 import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS } from './statics'
-import { TAction } from './TAction'
 
 export interface AppCompPropsFromStore {
 	readonly gapiReady: boolean
@@ -38,17 +36,8 @@ export interface AppCompPropsFromStore {
 	readonly endWeeks: number
 	readonly location: HistoryLocation
 }
-export interface AppCompPropsDispatch {
-	readonly signIn: () => void
-	readonly signOut: () => void
-	readonly loadCalendars: (restoreOldOnFailure: boolean) => void
-	readonly initGapi: () => void
-	readonly setLocale: (v: string) => void
-	readonly clearErrors: () => void
-	readonly historyPush: (path: string) => void
-}
 export interface AppCompPropsOwn { }
-export interface AppCompProps extends AppCompPropsOwn, AppCompPropsFromStore, AppCompPropsDispatch { }
+export interface AppCompProps extends AppCompPropsOwn, AppCompPropsFromStore, DispatchProp { }
 export interface AppCompState {
 	readonly startWeeks: number
 	readonly endWeeks: number
@@ -253,21 +242,23 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	}
 
 	componentDidMount() {
-		this.props.initGapi()
+		this.props.dispatch(makeActionInitGapi())
 	}
 	// getSnapshotBeforeUpdate(prevProps: AppCompProps, prevState: AppCompState): AppCompSnapshot {}
 	// componentDidUpdate(prevProps: AppCompProps, prevState: AppCompState, snapshot: AppCompSnapshot) {}
 	// componentWillUnmount() {}
 
 	onEventListsMounted = () => {
-		this.props.loadCalendars(this.props.gotEvents)
+		this.props.dispatch(makeActionLoadCalendars({
+			restoreOldOnFailure: this.props.gotEvents,
+		}))
 	}
 
 	onSignInClicked = () => {
 		if (this.props.isSignedIn) {
-			this.props.signOut()
+			this.props.dispatch(makeActionSignOut())
 		} else {
-			this.props.signIn()
+			this.props.dispatch(makeActionSignIn())
 		}
 	}
 
@@ -278,7 +269,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 		})
 		const value = parseFloat(e.currentTarget.value)
 		if (!isNaN(value)) {
-			this.props.historyPush(makeRouteHome(this.state.startWeeks, value))
+			this.props.dispatch(push(makeRouteHome(this.state.startWeeks, value)))
 		}
 	}
 
@@ -289,7 +280,7 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 		})
 		const value = parseFloat(e.currentTarget.value)
 		if (!isNaN(value)) {
-			this.props.historyPush(makeRouteHome(value, this.state.endWeeks))
+			this.props.dispatch(push(makeRouteHome(value, this.state.endWeeks)))
 		}
 	}
 
@@ -316,7 +307,9 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 		try {
 			const dt = DateTime.fromMillis(Date.now(), { locale })
 			console.log(dt.toLocaleString())
-			this.props.setLocale(dt.locale)
+			this.props.dispatch(makeActionSetLocale({
+				locale: dt.locale,
+			}))
 		} catch (e) {
 			console.error(e)
 		}
@@ -330,26 +323,28 @@ class AppCompPure extends Component<AppCompProps, AppCompState> {
 	}
 
 	onReloadEventsClicked = () => {
-		this.props.loadCalendars(this.props.gotEvents)
+		this.props.dispatch(makeActionLoadCalendars({
+			restoreOldOnFailure: this.props.gotEvents,
+		}))
 	}
 
 	onHomeClicked = () => {
 		// this.props.setStartWeeks(INITIAL_START_WEEKS)
 		// this.props.setEndWeeks(INITIAL_END_WEEKS)
-		this.props.historyPush(makeRouteHome(INITIAL_START_WEEKS, INITIAL_END_WEEKS))
+		this.props.dispatch(push(makeRouteHome(INITIAL_START_WEEKS, INITIAL_END_WEEKS)))
 	}
 
 	onClearErrorsClicked = () => {
-		this.props.clearErrors()
+		this.props.dispatch(makeActionClearErrors())
 	}
 
 	onCreateClicked = () => {
-		this.props.historyPush(makeRouteCreate(this.props.startWeeks, this.props.endWeeks))
+		this.props.dispatch(push(makeRouteCreate(this.props.startWeeks, this.props.endWeeks)))
 	}
 }
 
 export const AppComp = connect(
-	(state: State, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsFromStore>({
+	(state: State/* , ownProps: AppCompPropsOwn */) => withInterface<AppCompPropsFromStore>({
 		gapiReady: state.gapiReady,
 		isSignedIn: state.isSignedIn,
 		calendarsLoadState: state.loadStatesById[LOAD_STATE_CALENDARS],
@@ -359,19 +354,6 @@ export const AppComp = connect(
 		endWeeks: routeParamsEndWeeksSelector(state),
 		startWeeks: routeParamsStartWeeksSelector(state),
 		location: state.router.location,
-	}),
-	(dispatch: Dispatch<TAction>, ownProps: AppCompPropsOwn) => withInterface<AppCompPropsDispatch>({
-		signIn: () => dispatch(makeActionSignIn({})),
-		signOut: () => dispatch(makeActionSignOut({})),
-		loadCalendars: restoreOldOnFailure => dispatch(makeActionLoadCalendars({
-			restoreOldOnFailure,
-		})),
-		initGapi: () => dispatch(makeActionInitGapi({})),
-		setLocale: locale => dispatch(makeActionSetLocale({
-			locale,
-		})),
-		clearErrors: () => dispatch(makeActionClearErrors({})),
-		historyPush: path => dispatch(push(path)),
 	}),
 )(AppCompPure)
 

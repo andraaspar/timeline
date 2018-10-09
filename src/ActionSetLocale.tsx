@@ -1,16 +1,14 @@
+import { TOmit } from 'illa/Type'
 import { ActionType } from './ActionType'
 
-export interface ActionSetLocaleSchema {
+export interface ActionSetLocale {
+	readonly type: ActionType.SetLocale
 	readonly locale: string
 }
 
-export interface ActionSetLocale extends ActionSetLocaleSchema {
-	readonly type: ActionType.SetLocale
-}
-
-export function makeActionSetLocale(o: ActionSetLocaleSchema): ActionSetLocale {
+export function makeActionSetLocale(o: TOmit<ActionSetLocale, 'type'>): ActionSetLocale {
 	return {
-		type: ActionType.SetLocale as ActionType.SetLocale,
 		...o,
+		type: ActionType.SetLocale,
 	}
 }
