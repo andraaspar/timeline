@@ -1,3 +1,4 @@
+import { getIfIn } from 'illa/FunctionUtil'
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from './statics'
 
 export function getTimeDifference(min: number, max: number): string {
@@ -22,7 +23,7 @@ export function getTimeDifference(min: number, max: number): string {
 	].filter(Boolean).join(' ')
 }
 
-export function getDuration(start: number, end: number): string {
+export function getDuration(start: number, end: number, o: { negativePrefix?: string, positivePrefix?: string } = {}): string {
 	const originalDiff = end - start
 	let diff = Math.abs(originalDiff)
 	const weeks = Math.floor(diff / WEEK)
@@ -35,7 +36,7 @@ export function getDuration(start: number, end: number): string {
 	diff %= MINUTE
 	const secs = Math.round(diff / SECOND)
 	return [
-		originalDiff < 0 ? `-` : `+`,
+		originalDiff < 0 ? getIfIn(o, 'negativePrefix', `-`) : getIfIn(o, 'positivePrefix', `+`),
 		weeks && `${weeks}w`,
 		days && `${days}d`,
 		hours && `${hours}h`,

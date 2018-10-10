@@ -74,36 +74,22 @@ export class CompEventListItem extends Component<CompEventListItemProps, CompEve
 						{` `}
 						{this.props.event.startTimestamp !== this.props.event.endTimestamp &&
 							<span className={cssDuration}>
-								{getDuration(this.props.event.startTimestamp, this.props.event.endTimestamp)}
+								{getDuration(this.props.event.startTimestamp, this.props.event.endTimestamp, { positivePrefix: '', negativePrefix: '' })}
 							</span>
 						}
 					</div>
 					<div className={cssMeta}>
-						<div className={cssMetaName}>
-							{`S`}
-						</div>
-						<div className={cssMetaValue}>
-							<div className={cssStartEnd}>
-								{getTimeDifference(this.props.now, this.props.event.startTimestamp)}
-							</div>
-							<div className={cssDate}>
-								{this.getStartDate(this.props.event.startTimestamp, this.props.locale, this.props.event.isDate)}
-							</div>
-						</div>
+						{this.props.isPast ?
+							this.renderEnd()
+							:
+							this.renderStart()
+						}
 						{this.state.expanded &&
-							<>
-								<div className={cssMetaName}>
-									{`E`}
-								</div>
-								<div className={cssMetaValue}>
-									<div className={cssStartEnd}>
-										{getTimeDifference(this.props.now, this.props.event.endTimestamp)}
-									</div>
-									<div className={cssDate}>
-										{this.getEndDate(this.props.event.endTimestamp, this.props.locale, this.props.event.isDate)}
-									</div>
-								</div>
-							</>
+							(this.props.isPast ?
+								this.renderStart()
+								:
+								this.renderEnd()
+							)
 						}
 						{!this.state.alwaysExpanded &&
 							<div className={cssMetaButton}>
@@ -122,12 +108,46 @@ export class CompEventListItem extends Component<CompEventListItemProps, CompEve
 				{this.props.nextEvent &&
 					<div className={cssTimeBetween}>
 						{this.props.isPast ?
-							getDuration(this.props.event.startTimestamp, this.props.nextEvent.endTimestamp)
+							getDuration(this.props.event.startTimestamp, Math.min(this.props.event.endTimestamp, this.props.nextEvent.endTimestamp), { negativePrefix: ``, positivePrefix: `Overlap:` })
 							:
-							getDuration(this.props.event.endTimestamp, this.props.nextEvent.startTimestamp)
+							getDuration(this.props.event.endTimestamp, this.props.nextEvent.startTimestamp, { negativePrefix: `Overlap:`, positivePrefix: `` })
 						}
 					</div>
 				}
+			</>
+		)
+	}
+	renderStart() {
+		return (
+			<>
+				<div className={cssMetaName}>
+					{`S`}
+				</div>
+				<div className={cssMetaValue}>
+					<div className={cssStartEnd}>
+						{getTimeDifference(this.props.now, this.props.event.startTimestamp)}
+					</div>
+					<div className={cssDate}>
+						{this.getStartDate(this.props.event.startTimestamp, this.props.locale, this.props.event.isDate)}
+					</div>
+				</div>
+			</>
+		)
+	}
+	renderEnd() {
+		return (
+			<>
+				<div className={cssMetaName}>
+					{`E`}
+				</div>
+				<div className={cssMetaValue}>
+					<div className={cssStartEnd}>
+						{getTimeDifference(this.props.now, this.props.event.endTimestamp)}
+					</div>
+					<div className={cssDate}>
+						{this.getEndDate(this.props.event.endTimestamp, this.props.locale, this.props.event.isDate)}
+					</div>
+				</div>
 			</>
 		)
 	}

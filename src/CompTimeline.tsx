@@ -59,7 +59,7 @@ class CompTimelinePure extends Component<CompTimelineProps, CompTimelineState/* 
 			<CompRow distance={5} isVertical={true}>
 				{this.props.orderedPastEvents.length > 0 && this.props.orderedFutureEvents.length > 0 &&
 					<div className={cssDiff}>
-						{getDuration(this.props.orderedPastEvents[0].endTimestamp, this.props.orderedFutureEvents[0].startTimestamp)}
+						{getDuration(this.props.orderedPastEvents[0].endTimestamp, this.props.orderedFutureEvents[0].startTimestamp, { negativePrefix: `Overlap:`, positivePrefix: `` })}
 					</div>
 				}
 				<div className={cssEvents}>
