@@ -12,6 +12,7 @@ export interface CompEventListProps {
 	readonly eventsLoadState: StateLoad
 	readonly now: number
 	readonly locale: string
+	readonly isPast?: boolean
 }
 export interface CompEventListState { }
 export interface CompEventListSnapshot { }
@@ -30,38 +31,24 @@ export class CompEventList extends Component<CompEventListProps, CompEventListSt
 	// shouldComponentUpdate(nextProps: CompEventListProps, nextState: CompEventListState): boolean {}
 	render() {
 		return (
-			<>
-				{this.props.eventsLoadState === StateLoad.Loading &&
-					<div>
-						{`Loading events...`}
-					</div>
-				}
-				{this.props.eventsLoadState === StateLoad.Error &&
-					<div>
-						<em>{`Error loading events.`}</em>
-					</div>
-				}
-				{this.props.eventsLoadState === StateLoad.Loaded &&
-					(this.props.orderedEvents.length ?
-						<CompRow distance={5} isVertical>
-							{this.props.orderedEvents.map((event, index, events) =>
-								<CompEventListItem
-									key={event.id}
-									event={event}
-									calendar={this.props.calendarsById[event.calendarId]}
-									now={this.props.now}
-									nextEvent={events.slice(index + 1).find(e => e.isDate == event.isDate) || null}
-									locale={this.props.locale}
-								/>
-							)}
-						</CompRow>
-						:
-						<div>
-							<em>{`No events.`}</em>
-						</div>
-					)
-				}
-			</>
+			this.props.orderedEvents.length ?
+				<CompRow distance={5} isVertical>
+					{this.props.orderedEvents.map((event, index, events) =>
+						<CompEventListItem
+							key={event.id}
+							event={event}
+							calendar={this.props.calendarsById[event.calendarId]}
+							now={this.props.now}
+							nextEvent={event.isDate ? null : events.slice(index + 1).find(e => e.isDate == event.isDate) || null}
+							locale={this.props.locale}
+							isPast={this.props.isPast}
+						/>
+					)}
+				</CompRow>
+				:
+				<div>
+					<em>{`No events.`}</em>
+				</div>
 		)
 	}
 

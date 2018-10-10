@@ -1,3 +1,4 @@
+import { push } from 'connected-react-router'
 import { delay } from 'redux-saga'
 import { fork, put, select, take, takeLatest } from 'redux-saga/effects'
 import { makeActionAddErrors } from './ActionAddErrors'
@@ -7,6 +8,7 @@ import { ActionRequestEventInsert } from './ActionRequestEventInsert'
 import { makeActionSetCalendars } from './ActionSetCalendars'
 import { makeActionSetEvents } from './ActionSetEvents'
 import { makeActionSetGapiReady } from './ActionSetGapiReady'
+import { ActionSetLocale } from './ActionSetLocale'
 import { makeActionSetSignedIn } from './ActionSetSignedIn'
 import { ActionSetVisibility } from './ActionSetVisibility'
 import { ActionType } from './ActionType'
@@ -14,9 +16,11 @@ import { makeActionUpdateStateLoad } from './ActionUpdateStateLoad'
 import { GAPI } from './GAPI'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
-import { gotEventsSelector } from './selectors'
+import { makeRouteHome } from './RouteHome'
+import { gotEventsSelector, routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
 import { StateLoad } from './StateLoad'
 import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT, MINUTE, SECOND } from './statics'
+import { saveLocale } from './UtilLocale'
 
 export function* rootSaga() {
 	yield fork(gapiSaga)
@@ -48,6 +52,7 @@ function* gapiSaga() {
 		yield takeLatest(ActionType.LoadCalendars, loadCalendars)
 		yield takeLatest(ActionType.SetVisibility, setVisibility)
 		yield takeLatest(ActionType.RequestEventInsert, requestEventInsert)
+		yield takeLatest(ActionType.SetLocale, setLocale)
 		yield put(makeActionSetGapiReady({
 			flag: true,
 		}))
@@ -117,13 +122,20 @@ function* requestEventInsert(action: ActionRequestEventInsert) {
 	try {
 		yield GAPI.insertEvent(action.calendarId, action.event)
 		yield* loadSuccess(LOAD_STATE_INSERT_EVENT)
-		yield put(makeActionLoadEventsFromAllCalendars({
-			restoreOldOnFailure: false,
-		}))
+		const startWeeks: number = yield select(routeQueryStartWeeksSelector)
+		const endWeeks: number = yield select(routeQueryEndWeeksSelector)
+		yield put(push(makeRouteHome({
+			endWeeks,
+			startWeeks,
+		})))
 	} catch (e) {
 		yield* showError(e)
 		yield* loadError(LOAD_STATE_INSERT_EVENT)
 	}
+}
+
+function* setLocale(action: ActionSetLocale) {
+	yield saveLocale(action.locale)
 }
 
 function* showError(e: any) {

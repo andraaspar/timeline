@@ -6,7 +6,7 @@ interface IOptions {
 }
 
 export function eventInputFromString(timeZone: string, startStr: string, endStr: string, summary: string, o: IOptions = {}): gapi.client.calendar.EventInput {
-	if (!summary) throw new Error(`[pg30st] No summary.`)
+	summary = summary.trim()
 	const start = parseDate(timeZone, startStr, o.now)
 	const end = get(() => parseDate(timeZone, endStr, start), start)!
 	return {

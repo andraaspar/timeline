@@ -1,25 +1,21 @@
-import { url } from './UtilURL'
-export const ROUTE_HOME = '/home'
-export const ROUTE_CREATE = '/create'
+import qs from 'qs'
+import { TRoute } from './TRoute'
 
-export type TRoute =
-	| RouteHome
-	| RouteCreate
-
-export interface RouteHome {
-	readonly startWeeks: string
-	readonly endWeeks: string
+export function makeRouteString(o: TRoute) {
+	return `${o.path}?${qs.stringify(o, { strictNullHandling: true, sort: alphabeticalSort, filter })}`
 }
 
-export interface RouteCreate {
-	readonly startWeeks: string
-	readonly endWeeks: string
+function alphabeticalSort(a: string, b: string) {
+	return a.localeCompare(b)
 }
 
-export function makeRouteHome(startWeeks: number, endWeeks: number) {
-	return url`/home?startWeeks=${startWeeks + ''}&endWeeks=${endWeeks + ''}`
+function filter(name: string, value: string) {
+	if (name === 'path') {
+		return undefined
+	}
+	return value
 }
 
-export function makeRouteCreate(startWeeks: number, endWeeks: number) {
-	return url`/create?startWeeks=${startWeeks + ''}&endWeeks=${endWeeks + ''}`
+export function parseQueryString(query: string) {
+	return qs.parse(query ? query.slice(1) : '', { strictNullHandling: true })
 }

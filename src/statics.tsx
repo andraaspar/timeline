@@ -9,6 +9,16 @@ export const DATE_OPTIONS = {
 	year: 'numeric',
 	month: 'short',
 	day: '2-digit',
+	// hour: 'numeric',
+	// minute: '2-digit',
+	// second: '2-digit',
+}
+
+export const DATETIME_OPTIONS = {
+	weekday: 'short',
+	year: 'numeric',
+	month: 'short',
+	day: '2-digit',
 	hour: 'numeric',
 	minute: '2-digit',
 	// second: '2-digit',

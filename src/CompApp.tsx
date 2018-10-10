@@ -13,14 +13,17 @@ import { makeActionSetLocale } from './ActionSetLocale'
 import { makeActionSignIn } from './ActionSignIn'
 import { makeActionSignOut } from './ActionSignOut'
 import { CompEventInsert } from './CompEventInsert'
+import { CompLoadGuard } from './CompLoadGuard'
 import { CompOnMount } from './CompOnMount'
 import { CompRow } from './CompRow'
 import { CompTimeline } from './CompTimeline'
 import { cssButton } from './cssButton'
 import { cssInput } from './cssInput'
 import { cssInputLabelInline } from './cssInputLabelInline'
-import { makeRouteCreate, makeRouteHome, ROUTE_CREATE, ROUTE_HOME } from './route'
-import { gotEventsSelector, routeParamsEndWeeksSelector, routeParamsStartWeeksSelector } from './selectors'
+import { Path } from './Path'
+import { makeRouteCreate } from './RouteCreate'
+import { makeRouteHome } from './RouteHome'
+import { gotEventsSelector, routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
 import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS } from './statics'
@@ -126,7 +129,7 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 									{`⟳ 📅`}
 								</button>
 							}
-							<Route path={ROUTE_HOME} render={() => this.props.isSignedIn &&
+							<Route path={Path.Home} render={() => this.props.isSignedIn &&
 								<CompRow distance={5}>
 									<CompRow distance={5}>
 										<div
@@ -216,21 +219,12 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 						</CompRow>
 						{this.props.isSignedIn &&
 							<CompOnMount onMount={this.onEventListsMounted}>
-								<Switch>
-									<Route
-										exact
-										path={`/`}
-										render={history => <Redirect to={makeRouteHome(INITIAL_START_WEEKS, INITIAL_END_WEEKS)} />}
-									/>
-									<Route
-										path={ROUTE_HOME}
-										component={CompTimeline}
-									/>
-									<Route
-										path={ROUTE_CREATE}
-										component={CompEventInsert}
-									/>
-								</Switch>
+								<CompLoadGuard
+									what={`calendars`}
+									loadState={this.props.calendarsLoadState}
+									render={this.renderRoutes}
+								/>
+
 							</CompOnMount>
 						}
 					</CompRow>
@@ -254,6 +248,33 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 		}))
 	}
 
+	renderRoutes = () => {
+		return (
+			<Switch>
+				<Route
+					exact
+					path={`/`}
+					render={history =>
+						<Redirect
+							to={makeRouteHome({
+								startWeeks: INITIAL_START_WEEKS,
+								endWeeks: INITIAL_END_WEEKS,
+							})}
+						/>
+					}
+				/>
+				<Route
+					path={Path.Home}
+					component={CompTimeline}
+				/>
+				<Route
+					path={Path.Create}
+					component={CompEventInsert}
+				/>
+			</Switch>
+		)
+	}
+
 	onSignInClicked = () => {
 		if (this.props.isSignedIn) {
 			this.props.dispatch(makeActionSignOut())
@@ -269,7 +290,10 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 		})
 		const value = parseFloat(e.currentTarget.value)
 		if (!isNaN(value)) {
-			this.props.dispatch(push(makeRouteHome(this.state.startWeeks, value)))
+			this.props.dispatch(push(makeRouteHome({
+				startWeeks: this.state.startWeeks,
+				endWeeks: value,
+			})))
 		}
 	}
 
@@ -280,7 +304,10 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 		})
 		const value = parseFloat(e.currentTarget.value)
 		if (!isNaN(value)) {
-			this.props.dispatch(push(makeRouteHome(value, this.state.endWeeks)))
+			this.props.dispatch(push(makeRouteHome({
+				startWeeks: value,
+				endWeeks: this.state.endWeeks,
+			})))
 		}
 	}
 
@@ -311,7 +338,7 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 				locale: dt.locale,
 			}))
 		} catch (e) {
-			console.error(e)
+			// console.error(e)
 		}
 	}
 
@@ -331,7 +358,10 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 	onHomeClicked = () => {
 		// this.props.setStartWeeks(INITIAL_START_WEEKS)
 		// this.props.setEndWeeks(INITIAL_END_WEEKS)
-		this.props.dispatch(push(makeRouteHome(INITIAL_START_WEEKS, INITIAL_END_WEEKS)))
+		this.props.dispatch(push(makeRouteHome({
+			startWeeks: INITIAL_START_WEEKS,
+			endWeeks: INITIAL_END_WEEKS,
+		})))
 	}
 
 	onClearErrorsClicked = () => {
@@ -339,7 +369,10 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 	}
 
 	onCreateClicked = () => {
-		this.props.dispatch(push(makeRouteCreate(this.props.startWeeks, this.props.endWeeks)))
+		this.props.dispatch(push(makeRouteCreate({
+			startWeeks: this.props.startWeeks,
+			endWeeks: this.props.endWeeks,
+		})))
 	}
 }
 
@@ -351,8 +384,8 @@ export const CompApp = connect(
 		locale: state.locale,
 		errors: state.errors,
 		gotEvents: gotEventsSelector(state),
-		endWeeks: routeParamsEndWeeksSelector(state),
-		startWeeks: routeParamsStartWeeksSelector(state),
+		endWeeks: routeQueryEndWeeksSelector(state),
+		startWeeks: routeQueryStartWeeksSelector(state),
 		location: state.router.location,
 	}),
 )(CompAppPure)

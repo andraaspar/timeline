@@ -1,12 +1,13 @@
 import { css, cx } from 'emotion'
-import { get } from 'illa/FunctionUtil'
 import { DateTime } from 'luxon'
 import * as memoizee from 'memoizee'
 import React, { Component } from 'react'
 import { cssButton } from './cssButton'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
-import { DATE_OPTIONS, DAY, HOUR, MINUTE, SECOND, WEEK } from './statics'
+import { DATE_OPTIONS, DATETIME_OPTIONS } from './statics'
+import { BLACK_3, BLACK_4, BOLD, BORDER, BORDER_SHADOW, FONT_SIZE_SMALL, FONT_SIZE_TINY, GRAY_4, LINE_HEIGHT_SMALL, LINE_HEIGHT_TINY, ORANGE_1, RADIUS, WHITE } from './StyleConstants'
+import { getDuration, getTimeDifference } from './UtilTime'
 
 export interface CompEventListItemProps {
 	readonly calendar: ICalendar
@@ -15,6 +16,7 @@ export interface CompEventListItemProps {
 	readonly now: number
 	readonly alwaysExpanded?: boolean
 	readonly locale: string
+	readonly isPast?: boolean
 }
 export interface CompEventListItemState {
 	readonly expanded: boolean
@@ -48,84 +50,85 @@ export class CompEventListItem extends Component<CompEventListItemProps, CompEve
 	// shouldComponentUpdate(nextProps: CompEventListItemProps, nextState: CompEventListItemState): boolean {}
 	render() {
 		return (
-			<div className={this.props.event.isDate ? cssItemIsDate : cssItem}>
-				<div
-					className={cssColor}
-					style={{
-						backgroundColor: this.props.calendar.backgroundColor,
-						color: this.props.calendar.foregroundColor,
-					}}
-				>
-					{this.props.event.startTimestamp <= this.props.now ?
-						(this.props.event.endTimestamp > this.props.now ?
-							`►`
+			<>
+				<div className={this.props.event.isDate ? cssItemIsDate : cssItem}>
+					<div
+						className={cssColor}
+						style={{
+							backgroundColor: this.props.calendar.backgroundColor,
+							color: this.props.calendar.foregroundColor,
+						}}
+					>
+						{this.props.event.startTimestamp <= this.props.now ?
+							(this.props.event.endTimestamp > this.props.now ?
+								`►`
+								:
+								`-`
+							)
 							:
-							`-`
-						)
-						:
-						`+`
-					}
-				</div>
-				<div className={cssTitle}>
-					{this.props.event.summary}
-				</div>
-				<div className={cssMeta}>
-					<div className={cssMetaName}>
-						{`S`}
+							`+`
+						}
 					</div>
-					<div className={cssMetaValue}>
-						<div className={cssStartEnd}>
-							{this.getTimeDifference(this.props.now, this.props.event.startTimestamp)}
-						</div>
-						<div className={cssDate}>
-							{this.getStartDate(this.props.event.startTimestamp, this.props.locale)}
-						</div>
+					<div className={cssTitle}>
+						{this.props.event.summary}
+						{` `}
+						{this.props.event.startTimestamp !== this.props.event.endTimestamp &&
+							<span className={cssDuration}>
+								{getDuration(this.props.event.startTimestamp, this.props.event.endTimestamp)}
+							</span>
+						}
 					</div>
-					{this.state.expanded &&
-						<>
-							<div className={cssMetaName}>
-								{`D`}
-							</div>
-							<div className={cssMetaValue}>
-								{this.getDuration(this.props.event.startTimestamp, this.props.event.endTimestamp)}
-							</div>
-							<div className={cssMetaName}>
-								{`E`}
-							</div>
-							<div className={cssMetaValue}>
-								<div className={cssStartEnd}>
-									{this.getTimeDifference(this.props.now, this.props.event.endTimestamp)}
-								</div>
-								<div className={cssDate}>
-									{this.getEndDate(this.props.event.endTimestamp, this.props.locale, this.props.event.isDate)}
-								</div>
-							</div>
-							{this.props.nextEvent &&
-								<>
-									<div className={cssMetaName}>
-										{`N`}
-									</div>
-									<div className={cssMetaValue}>
-										{get(() => this.getDuration(this.props.event.endTimestamp, this.props.nextEvent!.startTimestamp))}
-									</div>
-								</>
-							}
-						</>
-					}
-					{!this.state.alwaysExpanded &&
-						<div className={cssMetaButton}>
-							<button
-								className={cssDetailsButton}
-								type='button'
-								title={this.state.expanded ? `Hide details` : `Show details`}
-								onClick={this.onShowDetailsClicked}
-							>
-								{this.state.expanded ? `▲` : `▼`}
-							</button>
+					<div className={cssMeta}>
+						<div className={cssMetaName}>
+							{`S`}
 						</div>
-					}
+						<div className={cssMetaValue}>
+							<div className={cssStartEnd}>
+								{getTimeDifference(this.props.now, this.props.event.startTimestamp)}
+							</div>
+							<div className={cssDate}>
+								{this.getStartDate(this.props.event.startTimestamp, this.props.locale, this.props.event.isDate)}
+							</div>
+						</div>
+						{this.state.expanded &&
+							<>
+								<div className={cssMetaName}>
+									{`E`}
+								</div>
+								<div className={cssMetaValue}>
+									<div className={cssStartEnd}>
+										{getTimeDifference(this.props.now, this.props.event.endTimestamp)}
+									</div>
+									<div className={cssDate}>
+										{this.getEndDate(this.props.event.endTimestamp, this.props.locale, this.props.event.isDate)}
+									</div>
+								</div>
+							</>
+						}
+						{!this.state.alwaysExpanded &&
+							<div className={cssMetaButton}>
+								<button
+									className={cssDetailsButton}
+									type='button'
+									title={this.state.expanded ? `Hide details` : `Show details`}
+									onClick={this.onShowDetailsClicked}
+								>
+									{this.state.expanded ? `▲` : `▼`}
+								</button>
+							</div>
+						}
+					</div>
 				</div>
-			</div>
+				{this.props.nextEvent &&
+					<div className={cssTimeBetween}>
+						{this.props.isPast ?
+							getDuration(this.props.event.startTimestamp, this.props.nextEvent.endTimestamp)
+							:
+							getDuration(this.props.event.endTimestamp, this.props.nextEvent.startTimestamp)
+						}
+					</div>
+				}
+			</>
 		)
 	}
 	// componentDidMount() {}
@@ -140,65 +143,20 @@ export class CompEventListItem extends Component<CompEventListItemProps, CompEve
 		})
 	}
 
-	getStartDate = memoizee((ms: number, locale: string) => {
-		return DateTime.fromMillis(ms, { locale }).toLocaleString(DATE_OPTIONS)
+	getStartDate = memoizee((ms: number, locale: string, isDate: boolean) => {
+		return DateTime.fromMillis(ms, { locale }).toLocaleString(isDate ? DATE_OPTIONS : DATETIME_OPTIONS)
 	}, { max: 1 })
 
 	getEndDate = memoizee((ms: number, locale: string, isDate: boolean) => {
-		return DateTime.fromMillis(ms, { locale }).minus({ milliseconds: isDate ? 1 : 0 }).toLocaleString(DATE_OPTIONS)
+		return DateTime.fromMillis(ms, { locale }).minus({ milliseconds: isDate ? 1 : 0 }).toLocaleString(isDate ? DATE_OPTIONS : DATETIME_OPTIONS)
 	}, { max: 1 })
-
-	getTimeDifference(min: number, max: number): string {
-		const originalDiff = max - min
-		let diff = Math.abs(originalDiff)
-		const weeks = Math.floor(diff / WEEK)
-		diff %= WEEK
-		const days = Math.floor(diff / DAY)
-		diff %= DAY
-		const hours = Math.floor(diff / HOUR)
-		diff %= HOUR
-		const mins = Math.floor(diff / MINUTE)
-		diff %= MINUTE
-		const secs = Math.round(diff / SECOND)
-		return [
-			originalDiff < 0 ? `-` : `+`,
-			weeks && `${weeks}w`,
-			days && `${days}d`,
-			`${hours}h`,
-			`${('0' + mins).slice(-2)}m`,
-			!weeks && !days && `${('0' + secs).slice(-2)}s`,
-		].filter(Boolean).join(' ')
-	}
-
-	getDuration(start: number, end: number): string {
-		const originalDiff = end - start
-		let diff = Math.abs(originalDiff)
-		const weeks = Math.floor(diff / WEEK)
-		diff %= WEEK
-		const days = Math.floor(diff / DAY)
-		diff %= DAY
-		const hours = Math.floor(diff / HOUR)
-		diff %= HOUR
-		const mins = Math.floor(diff / MINUTE)
-		diff %= MINUTE
-		const secs = Math.round(diff / SECOND)
-		return [
-			originalDiff < 0 ? `-` : `+`,
-			weeks && `${weeks}w`,
-			days && `${days}d`,
-			hours && `${hours}h`,
-			mins && `${mins}m`,
-			secs && `${secs}s`,
-			!weeks && !days && !hours && !mins && !secs && '0',
-		].filter(Boolean).join(' ')
-	}
 }
 
 const cssItem = css({
 	label: `${displayName}-item`,
-	background: 'white',
+	background: WHITE,
 	marginTop: 5,
-	borderRadius: `3px 0 3px 0`,
+	borderRadius: `${RADIUS} 0 ${RADIUS} 0`,
 	overflow: 'hidden',
 	display: 'grid',
 	gridTemplateRows: `min-content [header] auto [rest]`,
@@ -217,7 +175,7 @@ const cssItem = css({
 		bottom: 0,
 		left: 0,
 		right: 0,
-		boxShadow: `inset 0 0 0 1px rgba(0,0,0,.2)`,
+		boxShadow: BORDER_SHADOW,
 		borderRadius: `inherit`,
 		pointerEvents: 'none',
 	},
@@ -227,9 +185,7 @@ const cssItemIsDate = cx(
 	cssItem,
 	css({
 		label: `${displayName}-itemIsDate`,
-		'&::after': {
-			boxShadow: `inset 0 0 0 3px rgba(0,0,0,.2)`,
-		},
+		background: ORANGE_1,
 	}),
 )
 
@@ -239,7 +195,7 @@ const cssColor = css({
 	alignSelf: 'baseline',
 	borderWidth: 1,
 	borderStyle: 'solid',
-	borderColor: 'rgba(0, 0, 0, .2)',
+	borderColor: BLACK_3,
 	borderRadius: `3px 0 3px 0`,
 	padding: 3,
 	minWidth: 24,
@@ -249,7 +205,7 @@ const cssColor = css({
 const cssTitle = css({
 	label: `${displayName}-title`,
 	gridArea: 'title',
-	fontWeight: 'bold',
+	fontWeight: BOLD,
 	alignSelf: 'baseline',
 })
 
@@ -262,7 +218,7 @@ const cssMeta = css({
 
 const cssMetaCell = css({
 	// alignSelf: 'baseline',
-	borderTop: `1px solid rgba(0, 0, 0, .2)`,
+	borderTop: BORDER,
 	padding: `1px 0`,
 })
 
@@ -272,10 +228,10 @@ const cssMetaName = cx(
 		label: `${displayName}-metaName`,
 		gridColumn: '1 / 2',
 		justifySelf: 'end',
-		fontSize: 10,
-		fontWeight: 'bold',
+		fontSize: FONT_SIZE_TINY,
+		fontWeight: BOLD,
 		// lineHeight: `14px`,
-		color: 'gray',
+		color: BLACK_4,
 		paddingRight: 10,
 	}),
 )
@@ -309,14 +265,35 @@ const cssDetailsButton = cx(
 		borderColor: `transparent`,
 		borderRadius: 0,
 		padding: 0,
-		fontSize: 12,
-		lineHeight: `14px`,
+		fontSize: FONT_SIZE_SMALL,
+		lineHeight: LINE_HEIGHT_SMALL,
 	})
 )
 
 const cssDate = css({
 	label: `${displayName}-date`,
-	fontSize: 10,
-	lineHeight: `12px`,
-	color: 'gray',
+	fontSize: FONT_SIZE_TINY,
+	lineHeight: LINE_HEIGHT_TINY,
+	color: BLACK_4,
+})
+
+const cssTimeBetween = css({
+	label: `${displayName}-timeBetween`,
+	fontSize: FONT_SIZE_TINY,
+	lineHeight: LINE_HEIGHT_TINY,
+	fontWeight: BOLD,
+	color: BLACK_4,
+	padding: `2px 0 0`,
+})
+
+const cssDuration = css({
+	label: `${displayName}-duration`,
+	display: 'inline-block',
+	fontSize: FONT_SIZE_TINY,
+	lineHeight: LINE_HEIGHT_TINY,
+	fontWeight: BOLD,
+	background: GRAY_4,
+	color: WHITE,
+	borderRadius: RADIUS,
+	padding: `1px 5px`,
 })

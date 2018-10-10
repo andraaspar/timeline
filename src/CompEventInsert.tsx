@@ -3,7 +3,6 @@ import { TSet, withInterface } from 'illa/Type'
 import { Settings } from 'luxon'
 import React, { ChangeEvent, Component } from 'react'
 import { connect, DispatchProp } from 'react-redux'
-import { RouteComponentProps } from 'react-router-dom'
 import { makeActionRequestEventInsert } from './ActionRequestEventInsert'
 import { CompEventListItem } from './CompEventListItem'
 import { CompRow } from './CompRow'
@@ -13,11 +12,10 @@ import { cssInputLabel } from './cssInputLabel'
 import { eventInputFromString } from './EventInput_Methods'
 import { ICalendar } from './ICalendar'
 import { IEvent, makeIEventFromEventInput } from './IEvent'
-import { makeRouteHome } from './route'
-import { routeParamsEndWeeksSelector, routeParamsStartWeeksSelector } from './selectors'
+import { routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
-import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_INSERT_EVENT } from './statics'
+import { LOAD_STATE_INSERT_EVENT } from './statics'
 
 export interface CompEventInsertPropsFromStore {
 	readonly loadState: StateLoad
@@ -27,7 +25,7 @@ export interface CompEventInsertPropsFromStore {
 	readonly startWeeks: number
 	readonly endWeeks: number
 }
-export interface CompEventInsertPropsOwn extends RouteComponentProps { }
+export interface CompEventInsertPropsOwn { }
 export interface CompEventInsertProps extends CompEventInsertPropsOwn, CompEventInsertPropsFromStore, DispatchProp { }
 export interface CompEventInsertState {
 	readonly start: string
@@ -37,7 +35,6 @@ export interface CompEventInsertState {
 	readonly event: IEvent | null
 	readonly calendarId: string
 	readonly isSaving: boolean
-	readonly justSaved: boolean
 }
 export interface CompEventInsertSnap { }
 
@@ -56,28 +53,20 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 			event: null,
 			calendarId: 'primary',
 			isSaving: false,
-			justSaved: false,
 		}
 	}
 	// componentWillMount() {}
 	static getDerivedStateFromProps(nextProps: CompEventInsertProps, prevState: CompEventInsertState): CompEventInsertState | null {
 		const isSaving = nextProps.loadState === StateLoad.Loading
-		const justSaved = prevState.isSaving && nextProps.loadState === StateLoad.Loaded
 		return {
 			...prevState,
 			calendarId: Object.keys(nextProps.calendarsById).find(id => !!get(() => nextProps.calendarsById[id].primary)) || 'primary',
 			isSaving,
-			justSaved,
-			start: justSaved ? '' : prevState.start,
-			end: justSaved ? '' : prevState.end,
-			summary: justSaved ? '' : prevState.summary,
-			event: justSaved ? null : prevState.event,
-			eventInput: justSaved ? null : prevState.eventInput,
 		}
 	}
 	// shouldComponentUpdate(nextProps: CompEventInsertProps, nextState: CompEventInsertState): boolean {}
 	render() {
-		const disabled = this.props.loadState === StateLoad.Loading || this.state.justSaved
+		const disabled = this.props.loadState === StateLoad.Loading
 		return (
 			<CompRow distance={5} isVertical>
 				<div className={cssInputLabel}>
@@ -103,7 +92,7 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						value={this.state.start}
 						onChange={this.onStartValueChanged}
 						disabled={disabled}
-						placeholder={`16:45 or 08-23 or 2018-08-23 16:45+p1wt2h`}
+						placeholder={`16:45 or 08-23 or +pt2h`}
 					/>
 				</div>
 				<div className={cssInputLabel}>
@@ -116,8 +105,11 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						value={this.state.end}
 						onChange={this.onEndValueChanged}
 						disabled={disabled}
-						placeholder={`+p15m or 17:00 or 08-23 or 2018-08-24 11:33+p1wt2h`}
+						placeholder={`+p15m or 17:00 or 08-23`}
 					/>
+				</div>
+				<div className={cssInputLabel}>
+					{`Event:`}
 				</div>
 				{this.state.event &&
 					<CompEventListItem
@@ -134,7 +126,7 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						className={cssButton}
 						type='button'
 						onClick={this.onSaveEventClicked}
-						disabled={disabled}
+						disabled={disabled || !this.state.eventInput.summary}
 					>
 						{`Save event`}
 					</button>
@@ -142,13 +134,11 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 			</CompRow>
 		)
 	}
-	// componentDidMount() {}
-	// getSnapshotBeforeUpdate(prevProps: CompEventInsertProps, prevState: CompEventInsertState): CompEventInsertSnap {}
-	componentDidUpdate(prevProps: CompEventInsertProps, prevState: CompEventInsertState, snapshot: CompEventInsertSnap) {
-		if (this.state.justSaved) {
-			this.props.history.push(makeRouteHome(INITIAL_START_WEEKS, INITIAL_END_WEEKS))
-		}
+	componentDidMount() {
+		this.setStartEndSummary('', '', '')
 	}
+	// getSnapshotBeforeUpdate(prevProps: CompEventInsertProps, prevState: CompEventInsertState): CompEventInsertSnap {}
+	// componentDidUpdate(prevProps: CompEventInsertProps, prevState: CompEventInsertState, snapshot: CompEventInsertSnap) {}
 	// componentWillUnmount() {}
 
 	onStartValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
@@ -198,7 +188,7 @@ export const CompEventInsert = connect(
 		locale: state.locale,
 		now: state.now,
 		loadState: state.loadStatesById[LOAD_STATE_INSERT_EVENT],
-		endWeeks: routeParamsEndWeeksSelector(state),
-		startWeeks: routeParamsStartWeeksSelector(state),
+		endWeeks: routeQueryEndWeeksSelector(state),
+		startWeeks: routeQueryStartWeeksSelector(state),
 	}),
 )(CompEventInsertPure)

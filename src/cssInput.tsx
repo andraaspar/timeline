@@ -1,13 +1,15 @@
 import { css } from 'emotion'
+import { BORDER, BUTTON_PADDING, RADIUS, TEAL_4 } from './StyleConstants'
+import { topRightBottomLeftToCssValue } from './TTopRightBottomLeft_Methods'
 
 export const cssInput = css({
-	label: `inputCss`,
+	label: `cssInput`,
 	display: 'block',
 	width: `100%`,
-	border: `1px solid rgba(0, 0, 0, .2)`,
-	borderRadius: 3,
-	padding: 5,
+	border: BORDER,
+	borderRadius: RADIUS,
+	padding: topRightBottomLeftToCssValue(BUTTON_PADDING),
 	':focus': {
-		borderColor: 'teal',
+		borderColor: TEAL_4,
 	},
 })
