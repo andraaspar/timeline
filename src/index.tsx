@@ -7,7 +7,7 @@ import { Provider } from 'react-redux'
 import 'window-onerror-handler'
 import { CompApp } from './CompApp'
 import './index.css'
-import { unregister } from './registerServiceWorker'
+import registerServiceWorker from './registerServiceWorker'
 import { history, store } from './store'
 import { Timer } from './Timer'
 import { Visibility } from './Visibility'
@@ -21,7 +21,7 @@ ReactDOM.render(
 	</Provider>,
 	document.getElementById('root')
 )
-unregister()
+registerServiceWorker()
 Visibility.listen()
 Timer.listen()
 Timer.start()

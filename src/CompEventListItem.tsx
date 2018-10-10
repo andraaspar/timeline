@@ -1,6 +1,7 @@
 import { css, cx } from 'emotion'
 import { get } from 'illa/FunctionUtil'
 import { DateTime } from 'luxon'
+import * as memoizee from 'memoizee'
 import React, { Component } from 'react'
 import { cssButton } from './cssButton'
 import { ICalendar } from './ICalendar'
@@ -77,7 +78,7 @@ export class CompEventListItem extends Component<CompEventListItemProps, CompEve
 							{this.getTimeDifference(this.props.now, this.props.event.startTimestamp)}
 						</div>
 						<div className={cssDate}>
-							{DateTime.fromMillis(this.props.event.startTimestamp, { locale: this.props.locale }).toLocaleString(DATE_OPTIONS)}
+							{this.getStartDate(this.props.event.startTimestamp, this.props.locale)}
 						</div>
 					</div>
 					{this.state.expanded &&
@@ -96,7 +97,7 @@ export class CompEventListItem extends Component<CompEventListItemProps, CompEve
 									{this.getTimeDifference(this.props.now, this.props.event.endTimestamp)}
 								</div>
 								<div className={cssDate}>
-									{DateTime.fromMillis(this.props.event.endTimestamp, { locale: this.props.locale }).minus({ milliseconds: this.props.event.isDate ? 1 : 0 }).toLocaleString(DATE_OPTIONS)}
+									{this.getEndDate(this.props.event.endTimestamp, this.props.locale, this.props.event.isDate)}
 								</div>
 							</div>
 							{this.props.nextEvent &&
@@ -138,6 +139,14 @@ export class CompEventListItem extends Component<CompEventListItemProps, CompEve
 			expanded: !this.state.expanded,
 		})
 	}
+
+	getStartDate = memoizee((ms: number, locale: string) => {
+		return DateTime.fromMillis(ms, { locale }).toLocaleString(DATE_OPTIONS)
+	}, { max: 1 })
+
+	getEndDate = memoizee((ms: number, locale: string, isDate: boolean) => {
+		return DateTime.fromMillis(ms, { locale }).minus({ milliseconds: isDate ? 1 : 0 }).toLocaleString(DATE_OPTIONS)
+	}, { max: 1 })
 
 	getTimeDifference(min: number, max: number): string {
 		const originalDiff = max - min
