@@ -1,6 +1,7 @@
 import { withInterface } from 'illa/Type'
 import * as qs from 'qs'
 import { createSelector } from 'reselect'
+import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
 import { numberFromParam } from './param'
 import { Path } from './Path'
@@ -122,10 +123,32 @@ export const localeSelector = (state: State) => state.locale
 
 export const calendarsByIdSelector = (state: State) => state.calendarsById
 
-export const selectedCalendarIdsSelector = createSelector(
+export const calendarIdsSelector = createSelector(
 	calendarsByIdSelector,
-	calendarsById => Object.keys(calendarsById).filter(id => {
-		const calendar = calendarsById[id]
-		return calendar.selected
-	}),
+	calendarsById => Object.keys(calendarsById),
 )
+
+export const calendarsSelector = createSelector(
+	calendarIdsSelector,
+	calendarsByIdSelector,
+	(calendarIds, calendarsById) => calendarIds.map(id => calendarsById[id]),
+)
+
+export const selectedCalendarsSelector = createSelector(
+	calendarsSelector,
+	(calendars) => calendars.filter(calendar => calendar.selected),
+)
+
+export const editableCalendarsSelector = createSelector(
+	calendarsSelector,
+	(calendars) => calendars.filter(calendar => calendar.accessRole === 'writer' || calendar.accessRole === 'owner'),
+)
+
+export const editableCalendarsOrderedSelector = createSelector(
+	editableCalendarsSelector,
+	(editableCalendars) => editableCalendars.sort(sortCalendarsBySummary),
+)
+
+function sortCalendarsBySummary(a: ICalendar, b: ICalendar): number {
+	return (a.summary || '').localeCompare(b.summary || '')
+}

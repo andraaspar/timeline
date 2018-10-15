@@ -3,6 +3,7 @@ import { TSet, withInterface } from 'illa/Type'
 import { Settings } from 'luxon'
 import React, { ChangeEvent, Component } from 'react'
 import { connect, DispatchProp } from 'react-redux'
+import { isUndefined } from 'util'
 import { makeActionRequestEventInsert } from './ActionRequestEventInsert'
 import { CompEventListItem } from './CompEventListItem'
 import { CompRow } from './CompRow'
@@ -12,7 +13,7 @@ import { cssInputLabel } from './cssInputLabel'
 import { eventInputFromString } from './EventInput_Methods'
 import { ICalendar } from './ICalendar'
 import { IEvent, makeIEventFromEventInput } from './IEvent'
-import { routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
+import { editableCalendarsOrderedSelector, routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
 import { LOAD_STATE_INSERT_EVENT } from './statics'
@@ -20,6 +21,7 @@ import { LOAD_STATE_INSERT_EVENT } from './statics'
 export interface CompEventInsertPropsFromStore {
 	readonly loadState: StateLoad
 	readonly calendarsById: Readonly<TSet<ICalendar>>
+	readonly calendarsOrdered: ReadonlyArray<ICalendar>
 	readonly locale: string
 	readonly now: number
 	readonly startWeeks: number
@@ -60,7 +62,6 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 		const isSaving = nextProps.loadState === StateLoad.Loading
 		return {
 			...prevState,
-			calendarId: Object.keys(nextProps.calendarsById).find(id => !!get(() => nextProps.calendarsById[id].primary)) || 'primary',
 			isSaving,
 		}
 	}
@@ -109,11 +110,31 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 					/>
 				</div>
 				<div className={cssInputLabel}>
+					{`Calendar:`}
+				</div>
+				<div>
+					{this.props.calendarsOrdered.map(calendar =>
+						<label key={calendar.id}>
+							<input
+								type='radio'
+								name='calendar'
+								value={calendar.id}
+								defaultChecked={calendar.primary || this.state.calendarId === calendar.id}
+								onChange={this.onCalendarIdChanged}
+								disabled={disabled}
+							/>
+							{` `}
+							{calendar.summary}
+							{` `}
+						</label>
+					)}
+				</div>
+				<div className={cssInputLabel}>
 					{`Event:`}
 				</div>
 				{this.state.event &&
 					<CompEventListItem
-						calendar={this.props.calendarsById[this.state.calendarId]}
+						calendar={this.getCalendarById(this.state.calendarId)}
 						event={this.state.event}
 						nextEvent={null}
 						now={this.props.now}
@@ -135,41 +156,41 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 		)
 	}
 	componentDidMount() {
-		this.setStartEndSummary('', '', '')
+		this.setEventProperties({}) // Create event
 	}
 	// getSnapshotBeforeUpdate(prevProps: CompEventInsertProps, prevState: CompEventInsertState): CompEventInsertSnap {}
 	// componentDidUpdate(prevProps: CompEventInsertProps, prevState: CompEventInsertState, snapshot: CompEventInsertSnap) {}
 	// componentWillUnmount() {}
 
 	onStartValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
-		const start = e.currentTarget.value
-		const { end, summary } = this.state
-		this.setStartEndSummary(start, end, summary)
+		this.setEventProperties({ start: e.currentTarget.value })
 	}
 
 	onEndValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
-		const end = e.currentTarget.value
-		const { start, summary } = this.state
-		this.setStartEndSummary(start, end, summary)
+		this.setEventProperties({ end: e.currentTarget.value })
 	}
 
 	onSummaryValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
-		const summary = e.currentTarget.value
-		const { start, end } = this.state
-		this.setStartEndSummary(start, end, summary)
+		this.setEventProperties({ summary: e.currentTarget.value })
 	}
 
-	setStartEndSummary(start: string, end: string, summary: string) {
+	setEventProperties(o: { start?: string, end?: string, summary?: string, calendarId?: string }) {
+		const start = !isUndefined(o.start) ? o.start : this.state.start
+		const end = !isUndefined(o.end) ? o.end : this.state.end
+		const summary = !isUndefined(o.summary) ? o.summary : this.state.summary
+		const calendarId = !isUndefined(o.calendarId) ? o.calendarId : this.state.calendarId
 		const eventInput = get<gapi.client.calendar.EventInput | null>(() => eventInputFromString(Settings.defaultZoneName, start, end, summary), null) as gapi.client.calendar.EventInput | null
-		const event = eventInput ? makeIEventFromEventInput({ calendarId: this.state.calendarId, locale: this.props.locale }, eventInput) : null
+		const event = eventInput ? makeIEventFromEventInput({ calendarId, locale: this.props.locale }, eventInput) : null
 		this.setState({
 			...this.state,
-			start,
-			end,
-			summary,
+			...o,
 			eventInput,
 			event,
 		})
+	}
+
+	onCalendarIdChanged = (e: ChangeEvent<HTMLInputElement>) => {
+		this.setEventProperties({ calendarId: e.currentTarget.value })
 	}
 
 	onSaveEventClicked = () => {
@@ -180,11 +201,19 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 			}))
 		}
 	}
+
+	getCalendarById(id: string): ICalendar {
+		if (id === 'primary') {
+			return this.props.calendarsOrdered.find(calendar => !!calendar.primary)!
+		}
+		return this.props.calendarsById[this.state.calendarId]
+	}
 }
 
 export const CompEventInsert = connect(
 	(state: State/* , ownProps: CompEventInsertPropsOwn */) => withInterface<CompEventInsertPropsFromStore>({
 		calendarsById: state.calendarsById,
+		calendarsOrdered: editableCalendarsOrderedSelector(state),
 		locale: state.locale,
 		now: state.now,
 		loadState: state.loadStatesById[LOAD_STATE_INSERT_EVENT],
