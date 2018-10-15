@@ -1,6 +1,7 @@
 import { withInterface } from 'illa/Type'
 import * as qs from 'qs'
 import { createSelector } from 'reselect'
+import { IEvent } from './IEvent'
 import { numberFromParam } from './param'
 import { Path } from './Path'
 import { State } from './State'
@@ -10,25 +11,27 @@ import { TRoute } from './TRoute'
 export const nowSelector = (state: State) => state.now
 export const eventsByIdSelector = (state: State) => state.eventsById
 
-export const eventsOrderedSelector = createSelector(
+export const eventsOrderedByStartThenEndThenSummarySelector = createSelector(
 	eventsByIdSelector,
 	(eventsById) => {
-		return Object.keys(eventsById).map(id => eventsById[id]).sort((a, b) => {
-			const startDiff = a.startTimestamp - b.startTimestamp
-			if (startDiff) {
-				return startDiff
-			}
-			const endDiff = a.endTimestamp - b.endTimestamp
-			if (endDiff) {
-				return endDiff
-			}
-			return (a.summary || '').localeCompare(b.summary || '')
-		})
+		return Object.keys(eventsById).map(id => eventsById[id]).sort(sortEventsByStartThenEndThenSummary)
 	},
 )
 
+function sortEventsByStartThenEndThenSummary(a: IEvent, b: IEvent): number {
+	const startDiff = a.startTimestamp - b.startTimestamp
+	if (startDiff) {
+		return startDiff
+	}
+	const endDiff = a.endTimestamp - b.endTimestamp
+	if (endDiff) {
+		return endDiff
+	}
+	return (a.summary || '').localeCompare(b.summary || '')
+}
+
 export const firstFutureEventIndexSelector = createSelector(
-	eventsOrderedSelector,
+	eventsOrderedByStartThenEndThenSummarySelector,
 	nowSelector,
 	(eventsOrdered, now) => {
 		return eventsOrdered.findIndex(event => event.startTimestamp >= now)
@@ -36,7 +39,7 @@ export const firstFutureEventIndexSelector = createSelector(
 )
 
 export const eventsOrderedFutureSelector = createSelector(
-	eventsOrderedSelector,
+	eventsOrderedByStartThenEndThenSummarySelector,
 	firstFutureEventIndexSelector,
 	(eventsOrdered, firstFutureEventIndex) => {
 		if (firstFutureEventIndex == -1) {
@@ -47,15 +50,28 @@ export const eventsOrderedFutureSelector = createSelector(
 )
 
 export const eventsOrderedPastSelector = createSelector(
-	eventsOrderedSelector,
+	eventsOrderedByStartThenEndThenSummarySelector,
 	firstFutureEventIndexSelector,
 	(eventsOrdered, firstFutureEventIndex) => {
-		if (firstFutureEventIndex == -1) {
-			return eventsOrdered.slice().reverse()
-		}
-		return eventsOrdered.slice(0, firstFutureEventIndex).reverse()
+		const eventsStartedInThePast = firstFutureEventIndex == -1 ?
+			eventsOrdered.slice()
+			:
+			eventsOrdered.slice(0, firstFutureEventIndex)
+		return eventsStartedInThePast.reverse().sort(sortEventsByEndThenStartDescendingThenSummary)
 	},
 )
+
+function sortEventsByEndThenStartDescendingThenSummary(a: IEvent, b: IEvent): number {
+	const endDiff = b.endTimestamp - a.endTimestamp
+	if (endDiff) {
+		return endDiff
+	}
+	const startDiff = b.startTimestamp - a.startTimestamp
+	if (startDiff) {
+		return startDiff
+	}
+	return (a.summary || '').localeCompare(b.summary || '')
+}
 
 export const gotEventsSelector = createSelector(
 	eventsByIdSelector,
