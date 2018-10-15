@@ -9,10 +9,12 @@ export function eventInputFromString(timeZone: string, startStr: string, endStr:
 	summary = summary.trim()
 	const start = parseDate(timeZone, startStr, o.now)
 	const end = get(() => parseDate(timeZone, endStr, start), start)!
+	const bothAreDates = isDate(start) && isDate(end)
+	const isReversed = start.toMillis() > end.toMillis()
 	return {
 		summary,
-		start: dateTimeToGapiDateTime(start),
-		end: dateTimeToGapiDateTime(end, { isEnd: true }),
+		start: dateTimeToGapiDateTime(isReversed ? end : start, { isDate: bothAreDates }),
+		end: dateTimeToGapiDateTime(isReversed ? start : end, { isDate: bothAreDates, isEnd: true }),
 	}
 }
 
@@ -64,8 +66,8 @@ function isDate(dt: DateTime) {
 	return dt.equals(dt.startOf('day'))
 }
 
-function dateTimeToGapiDateTime(dt: DateTime, o: { isEnd?: boolean } = {}): gapi.client.calendar.EventInput['start'] {
-	if (isDate(dt)) {
+function dateTimeToGapiDateTime(dt: DateTime, o: { isDate: boolean, isEnd?: boolean }): gapi.client.calendar.EventInput['start'] {
+	if (o.isDate) {
 		return {
 			date: o.isEnd ? dt.plus({ days: 1 }).toISODate() : dt.toISODate(),
 		}

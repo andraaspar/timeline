@@ -104,7 +104,7 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 						<em>{`Working...`}</em>
 					</div>
 					:
-					<>
+					<CompRow distance={5} isVertical>
 						{this.props.errors.length > 0 &&
 							<button
 								className={cssButton}
@@ -239,7 +239,7 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 							:
 							<div>{`Loading Google API...`}</div>
 						}
-					</>
+					</CompRow>
 				}
 			</CompRow>
 		)
