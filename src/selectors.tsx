@@ -152,3 +152,10 @@ export const editableCalendarsOrderedSelector = createSelector(
 function sortCalendarsBySummary(a: ICalendar, b: ICalendar): number {
 	return (a.summary || '').localeCompare(b.summary || '')
 }
+
+export const uiBlockersSelector = (state: State) => state.uiBlockers
+
+export const isUiBlockedSelector = createSelector(
+	uiBlockersSelector,
+	uiBlockers => Object.keys(uiBlockers).length > 0,
+)

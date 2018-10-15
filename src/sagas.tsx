@@ -4,7 +4,9 @@ import { fork, put, select, take, takeLatest } from 'redux-saga/effects'
 import { makeActionAddErrors } from './ActionAddErrors'
 import { ActionLoadCalendars } from './ActionLoadCalendars'
 import { ActionLoadEventsFromAllCalendars, makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars'
+import { ActionRequestEventDelete } from './ActionRequestEventDelete'
 import { ActionRequestEventInsert } from './ActionRequestEventInsert'
+import { makeActionSetBlockUi } from './ActionSetBlockUi'
 import { makeActionSetCalendars } from './ActionSetCalendars'
 import { makeActionSetEvents } from './ActionSetEvents'
 import { makeActionSetGapiReady } from './ActionSetGapiReady'
@@ -19,7 +21,9 @@ import { IEvent } from './IEvent'
 import { makeRouteHome } from './RouteHome'
 import { gotEventsSelector, routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
 import { StateLoad } from './StateLoad'
-import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT, MINUTE, SECOND } from './statics'
+import { StateLoadId } from './StateLoadId'
+import { StateUiBlockId } from './StateUiBlockId'
+import { MINUTE, SECOND } from './statics'
 import { saveLocale } from './UtilLocale'
 
 export function* rootSaga() {
@@ -53,6 +57,7 @@ function* gapiSaga() {
 		yield takeLatest(ActionType.SetVisibility, setVisibility)
 		yield takeLatest(ActionType.RequestEventInsert, requestEventInsert)
 		yield takeLatest(ActionType.SetLocale, setLocale)
+		yield takeLatest(ActionType.RequestEventDelete, requestEventDelete)
 		yield put(makeActionSetGapiReady({
 			flag: true,
 		}))
@@ -71,39 +76,39 @@ function* signOut() {
 
 function* loadEventsFromAllCalendars(action: ActionLoadEventsFromAllCalendars) {
 	try {
-		yield* loadStart(LOAD_STATE_EVENTS)
+		yield* loadStart(StateLoadId.Events)
 		const events: IEvent[] = yield GAPI.loadEventsFromAllCalendars()
 		yield put(makeActionSetEvents({
 			events,
 		}))
-		yield* loadSuccess(LOAD_STATE_EVENTS)
+		yield* loadSuccess(StateLoadId.Events)
 	} catch (e) {
 		yield* showError(e)
 		if (action.restoreOldOnFailure) {
-			yield* loadSuccess(LOAD_STATE_EVENTS)
+			yield* loadSuccess(StateLoadId.Events)
 		} else {
-			yield* loadError(LOAD_STATE_EVENTS)
+			yield* loadError(StateLoadId.Events)
 		}
 	}
 }
 
 function* loadCalendars(action: ActionLoadCalendars) {
 	try {
-		yield* loadStart(LOAD_STATE_CALENDARS)
+		yield* loadStart(StateLoadId.Calendars)
 		const calendars: ICalendar[] = yield GAPI.loadCalendars()
 		yield put(makeActionSetCalendars({
 			calendars,
 		}))
-		yield* loadSuccess(LOAD_STATE_CALENDARS)
+		yield* loadSuccess(StateLoadId.Calendars)
 		yield put(makeActionLoadEventsFromAllCalendars({
 			restoreOldOnFailure: false,
 		}))
 	} catch (e) {
 		yield* showError(e)
 		if (action.restoreOldOnFailure) {
-			yield* loadSuccess(LOAD_STATE_CALENDARS)
+			yield* loadSuccess(StateLoadId.Calendars)
 		} else {
-			yield* loadError(LOAD_STATE_CALENDARS)
+			yield* loadError(StateLoadId.Calendars)
 		}
 	}
 }
@@ -118,10 +123,10 @@ function* setVisibility(action: ActionSetVisibility) {
 }
 
 function* requestEventInsert(action: ActionRequestEventInsert) {
-	yield* loadStart(LOAD_STATE_INSERT_EVENT)
+	yield* blockUi(StateUiBlockId.InsertEvent, true)
 	try {
 		yield GAPI.insertEvent(action.calendarId, action.event)
-		yield* loadSuccess(LOAD_STATE_INSERT_EVENT)
+		yield* blockUi(StateUiBlockId.InsertEvent, false)
 		const startWeeks: number = yield select(routeQueryStartWeeksSelector)
 		const endWeeks: number = yield select(routeQueryEndWeeksSelector)
 		yield put(push(makeRouteHome({
@@ -130,12 +135,23 @@ function* requestEventInsert(action: ActionRequestEventInsert) {
 		})))
 	} catch (e) {
 		yield* showError(e)
-		yield* loadError(LOAD_STATE_INSERT_EVENT)
+		yield* blockUi(StateUiBlockId.InsertEvent, false)
 	}
 }
 
 function* setLocale(action: ActionSetLocale) {
 	yield saveLocale(action.locale)
+}
+
+function* requestEventDelete(action: ActionRequestEventDelete) {
+	yield* blockUi(StateUiBlockId.DeleteEvent, true)
+	try {
+		yield GAPI.deleteEvent(action.calendarId, action.eventId)
+		yield* blockUi(StateUiBlockId.DeleteEvent, false)
+	} catch (e) {
+		yield* showError(e)
+		yield* blockUi(StateUiBlockId.DeleteEvent, false)
+	}
 }
 
 function* showError(e: any) {
@@ -166,7 +182,14 @@ function* loadSuccess(id: string) {
 
 function* loadError(id: string) {
 	yield put(makeActionUpdateStateLoad({
-		id: id,
+		id,
 		state: StateLoad.Error,
+	}))
+}
+
+function* blockUi(id: string, block: boolean) {
+	yield put(makeActionSetBlockUi({
+		id,
+		block,
 	}))
 }

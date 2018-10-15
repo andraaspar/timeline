@@ -16,4 +16,6 @@ export enum ActionType {
 	ClearErrors = 'ClearErrors',
 	UpdateStateLoad = 'UpdateStateLoad',
 	RequestEventInsert = 'RequestEventInsert',
+	RequestEventDelete = 'RequestEventDelete',
+	SetBlockUi = 'SetBlockUi',
 }

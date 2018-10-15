@@ -2,6 +2,7 @@ import { css, cx } from 'emotion'
 import { DateTime } from 'luxon'
 import * as memoizee from 'memoizee'
 import React, { Component } from 'react'
+import { CompRow } from './CompRow'
 import { cssButton } from './cssButton'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
@@ -17,6 +18,7 @@ export interface CompEventListItemProps {
 	readonly alwaysExpanded?: boolean
 	readonly locale: string
 	readonly isPast?: boolean
+	readonly onRequestDelete?: (event: IEvent) => void
 }
 export interface CompEventListItemState {
 	readonly expanded: boolean
@@ -91,8 +93,21 @@ export class CompEventListItem extends Component<CompEventListItemProps, CompEve
 								this.renderEnd()
 							)
 						}
+						{this.state.expanded && this.props.onRequestDelete &&
+							<div className={cssMetaButtons}>
+								<CompRow>
+									<button
+										className={cssEventButton}
+										type='button'
+										onClick={this.onDeleteClicked}
+									>
+										{`× Delete`}
+									</button>
+								</CompRow>
+							</div>
+						}
 						{!this.state.alwaysExpanded &&
-							<div className={cssMetaButton}>
+							<div className={cssMetaButtons}>
 								<button
 									className={cssDetailsButton}
 									type='button'
@@ -170,6 +185,12 @@ export class CompEventListItem extends Component<CompEventListItemProps, CompEve
 	getEndDate = memoizee((ms: number, locale: string, isDate: boolean) => {
 		return DateTime.fromMillis(ms, { locale }).minus({ milliseconds: isDate ? 1 : 0 }).toLocaleString(isDate ? DATE_OPTIONS : DATETIME_OPTIONS)
 	}, { max: 1 })
+
+	onDeleteClicked = () => {
+		if (this.props.onRequestDelete) {
+			this.props.onRequestDelete(this.props.event)
+		}
+	}
 }
 
 const cssItem = css({
@@ -264,10 +285,10 @@ const cssMetaValue = cx(
 	}),
 )
 
-const cssMetaButton = cx(
+const cssMetaButtons = cx(
 	cssMetaCell,
 	css({
-		label: `${displayName}-metaButton`,
+		label: `${displayName}-metaButtons`,
 		gridColumn: '1 / 3',
 		padding: 0,
 	}),
@@ -278,12 +299,19 @@ const cssStartEnd = css({
 	fontWeight: 'bold',
 })
 
-const cssDetailsButton = cx(
+const cssEventButton = cx(
 	cssButton,
 	css({
-		label: `${displayName}-button`,
+		label: `${displayName}-eventButton`,
 		borderColor: `transparent`,
 		borderRadius: 0,
+	})
+)
+
+const cssDetailsButton = cx(
+	cssEventButton,
+	css({
+		label: `${displayName}-detailsButton`,
 		padding: 0,
 		fontSize: FONT_SIZE_SMALL,
 		lineHeight: LINE_HEIGHT_SMALL,

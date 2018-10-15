@@ -15,11 +15,8 @@ import { ICalendar } from './ICalendar'
 import { IEvent, makeIEventFromEventInput } from './IEvent'
 import { editableCalendarsOrderedSelector, routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
 import { State } from './State'
-import { StateLoad } from './StateLoad'
-import { LOAD_STATE_INSERT_EVENT } from './statics'
 
 export interface CompEventInsertPropsFromStore {
-	readonly loadState: StateLoad
 	readonly calendarsById: Readonly<TSet<ICalendar>>
 	readonly calendarsOrdered: ReadonlyArray<ICalendar>
 	readonly locale: string
@@ -36,7 +33,6 @@ export interface CompEventInsertState {
 	readonly eventInput: gapi.client.calendar.EventInput | null
 	readonly event: IEvent | null
 	readonly calendarId: string
-	readonly isSaving: boolean
 }
 export interface CompEventInsertSnap { }
 
@@ -54,20 +50,12 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 			eventInput: null,
 			event: null,
 			calendarId: 'primary',
-			isSaving: false,
 		}
 	}
 	// componentWillMount() {}
-	static getDerivedStateFromProps(nextProps: CompEventInsertProps, prevState: CompEventInsertState): CompEventInsertState | null {
-		const isSaving = nextProps.loadState === StateLoad.Loading
-		return {
-			...prevState,
-			isSaving,
-		}
-	}
+	// static getDerivedStateFromProps(nextProps: CompEventInsertProps, prevState: CompEventInsertState): CompEventInsertState | null {}
 	// shouldComponentUpdate(nextProps: CompEventInsertProps, nextState: CompEventInsertState): boolean {}
 	render() {
-		const disabled = this.props.loadState === StateLoad.Loading
 		return (
 			<CompRow distance={5} isVertical>
 				<div className={cssInputLabel}>
@@ -79,7 +67,6 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						type='text'
 						value={this.state.summary}
 						onChange={this.onSummaryValueChanged}
-						disabled={disabled}
 						placeholder={`What’s happening`}
 					/>
 				</div>
@@ -92,7 +79,6 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						type='text'
 						value={this.state.start}
 						onChange={this.onStartValueChanged}
-						disabled={disabled}
 						placeholder={`16:45 or 08-23 or +pt2h`}
 					/>
 				</div>
@@ -105,7 +91,6 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						type='text'
 						value={this.state.end}
 						onChange={this.onEndValueChanged}
-						disabled={disabled}
 						placeholder={`+p15m or 17:00 or 08-23`}
 					/>
 				</div>
@@ -121,7 +106,6 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 								value={calendar.id}
 								defaultChecked={calendar.primary || this.state.calendarId === calendar.id}
 								onChange={this.onCalendarIdChanged}
-								disabled={disabled}
 							/>
 							{` `}
 							{calendar.summary}
@@ -147,7 +131,7 @@ class CompEventInsertPure extends Component<CompEventInsertProps, CompEventInser
 						className={cssButton}
 						type='button'
 						onClick={this.onSaveEventClicked}
-						disabled={disabled || !this.state.eventInput.summary}
+						disabled={!this.state.eventInput.summary}
 					>
 						{`Save event`}
 					</button>
@@ -216,7 +200,6 @@ export const CompEventInsert = connect(
 		calendarsOrdered: editableCalendarsOrderedSelector(state),
 		locale: state.locale,
 		now: state.now,
-		loadState: state.loadStatesById[LOAD_STATE_INSERT_EVENT],
 		endWeeks: routeQueryEndWeeksSelector(state),
 		startWeeks: routeQueryStartWeeksSelector(state),
 	}),

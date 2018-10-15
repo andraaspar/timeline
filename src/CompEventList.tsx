@@ -13,6 +13,7 @@ export interface CompEventListProps {
 	readonly now: number
 	readonly locale: string
 	readonly isPast?: boolean
+	readonly onRequestDelete?: (event: IEvent) => void
 }
 export interface CompEventListState { }
 export interface CompEventListSnapshot { }
@@ -42,6 +43,7 @@ export class CompEventList extends Component<CompEventListProps, CompEventListSt
 							nextEvent={event.isDate ? null : events.slice(index + 1).find(e => e.isDate == event.isDate) || null}
 							locale={this.props.locale}
 							isPast={this.props.isPast}
+							onRequestDelete={this.props.onRequestDelete}
 						/>
 					)}
 				</CompRow>

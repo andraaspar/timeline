@@ -4,6 +4,7 @@ import { ActionInitGapi } from './ActionInitGapi'
 import { ActionLoadCalendars } from './ActionLoadCalendars'
 import { ActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars'
 import { ActionRequestEventInsert } from './ActionRequestEventInsert'
+import { ActionSetBlockUi } from './ActionSetBlockUi'
 import { ActionSetCalendars } from './ActionSetCalendars'
 import { ActionSetEvents } from './ActionSetEvents'
 import { ActionSetGapiReady } from './ActionSetGapiReady'
@@ -30,3 +31,4 @@ export type TAction =
 	| ActionClearErrors
 	| ActionUpdateStateLoad
 	| ActionRequestEventInsert
+	| ActionSetBlockUi

@@ -1,15 +1,18 @@
 import { RouterState } from 'connected-react-router'
+import { enumValues } from 'illa/EnumUtil'
 import { TSet } from 'illa/Type'
+import { omit } from 'lodash'
 import zipObject from 'lodash/zipObject'
 import { ActionType } from './ActionType'
 import { ICalendar } from './ICalendar'
 import { IEvent } from './IEvent'
 import { StateLoad } from './StateLoad'
-import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS, LOAD_STATE_INSERT_EVENT } from './statics'
+import { StateLoadId } from './StateLoadId'
 import { TAction } from './TAction'
 import { getLocale } from './UtilLocale'
 
 export interface State {
+	readonly uiBlockers: Readonly<TSet<number>>
 	readonly loadStatesById: Readonly<TSet<StateLoad>>
 	readonly eventsById: Readonly<TSet<IEvent>>
 	readonly calendarsById: Readonly<TSet<ICalendar>>
@@ -22,12 +25,9 @@ export interface State {
 }
 
 function makeState(): State {
-	const allLoadStates = [
-		LOAD_STATE_CALENDARS,
-		LOAD_STATE_EVENTS,
-		LOAD_STATE_INSERT_EVENT,
-	]
+	const allLoadStates = enumValues(StateLoadId)
 	return {
+		uiBlockers: {},
 		loadStatesById: {
 			...zipObject(allLoadStates, allLoadStates.map(() => StateLoad.Never)),
 		},
@@ -102,6 +102,24 @@ export function reducerState(state = makeState(), action: TAction): State {
 					[action.id]: action.state,
 				},
 			}
+		case ActionType.SetBlockUi: {
+			const current = state.uiBlockers[action.id]
+			const next = Math.max(0, action.block ? (current + 1 || 1) : (current - 1) || 0)
+			if (next) {
+				return {
+					...state,
+					uiBlockers: {
+						...state.uiBlockers,
+						[action.id]: next,
+					},
+				}
+			} else {
+				return {
+					...state,
+					uiBlockers: omit(state.uiBlockers, action.id),
+				}
+			}
+		}
 	}
 	return state
 }

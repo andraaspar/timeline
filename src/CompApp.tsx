@@ -23,10 +23,11 @@ import { cssInputLabelInline } from './cssInputLabelInline'
 import { Path } from './Path'
 import { makeRouteCreate } from './RouteCreate'
 import { makeRouteHome } from './RouteHome'
-import { gotEventsSelector, routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
+import { gotEventsSelector, isUiBlockedSelector, routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
-import { INITIAL_END_WEEKS, INITIAL_START_WEEKS, LOAD_STATE_CALENDARS } from './statics'
+import { StateLoadId } from './StateLoadId'
+import { INITIAL_END_WEEKS, INITIAL_START_WEEKS } from './statics'
 
 export interface CompAppPropsFromStore {
 	readonly gapiReady: boolean
@@ -38,6 +39,7 @@ export interface CompAppPropsFromStore {
 	readonly startWeeks: number
 	readonly endWeeks: number
 	readonly location: HistoryLocation
+	readonly isUiBlocked: boolean
 }
 export interface CompAppPropsOwn { }
 export interface CompAppProps extends CompAppPropsOwn, CompAppPropsFromStore, DispatchProp { }
@@ -97,139 +99,147 @@ class CompAppPure extends Component<CompAppProps, CompAppState> {
 						</div>
 					</div>
 				}
-				{this.props.errors.length > 0 &&
-					<button
-						className={cssButton}
-						type='button'
-						onClick={this.onClearErrorsClicked}
-					>
-						{`Clear errors`}
-					</button>
-				}
-				{this.props.gapiReady ?
-					<CompRow distance={5} isVertical>
-						<CompRow distance={5}>
-							<div className={cssInputLabelInline}>
-								{process.env.REACT_APP_VERSION}
-							</div>
+				{this.props.isUiBlocked ?
+					<div>
+						<em>{`Working...`}</em>
+					</div>
+					:
+					<>
+						{this.props.errors.length > 0 &&
 							<button
 								className={cssButton}
 								type='button'
-								onClick={this.onSignInClicked}
+								onClick={this.onClearErrorsClicked}
 							>
-								{this.props.isSignedIn ? 'Sign out' : 'Sign in'}
+								{`Clear errors`}
 							</button>
-							{this.props.isSignedIn &&
-								<button
-									className={cssButton}
-									type='button'
-									title={`Reload events`}
-									onClick={this.onReloadEventsClicked}
-								>
-									{`⟳ 📅`}
-								</button>
-							}
-							<Route path={Path.Home} render={() => this.props.isSignedIn &&
-								<CompRow distance={5}>
-									<CompRow distance={5}>
-										<div
-											className={cssInputLabelInline}
-											title={`Start weeks`}
-										>
-											{`S:`}
-										</div>
-										<input
-											className={cssInput}
-											type='number'
-											max={this.state.endWeeks}
-											step={`any`}
-											value={this.state.startWeeksStringValue}
-											onChange={this.onStartWeeksChanged}
-											onBlur={this.onStarWeeksBlurred}
-											style={{
-												width: 50,
-											}}
-										/>
-									</CompRow>
-									<CompRow distance={5}>
-										<div
-											className={cssInputLabelInline}
-											title={`End weeks`}
-										>
-											{`E:`}
-										</div>
-										<input
-											className={cssInput}
-											type='number'
-											min={this.state.startWeeks}
-											step={`any`}
-											value={this.state.endWeeksStringValue}
-											onChange={this.onEndWeeksChanged}
-											onBlur={this.onEndWeeksBlurred}
-											style={{
-												width: 50,
-											}}
-										/>
-									</CompRow>
-								</CompRow>
-							}
-							/>
-							{this.props.isSignedIn &&
-								<button
-									className={cssButton}
-									type='button'
-									title={`Home`}
-									onClick={this.onHomeClicked}
-								>
-									{`🏠`}
-								</button>
-							}
-							{this.props.isSignedIn &&
-								<>
-									<input
-										className={cssInput}
-										type='text'
-										value={this.state.localeValue}
-										onChange={this.onLocaleChanged}
-										onBlur={this.onLocaleBlurred}
-										list='locales'
-										style={{
-											width: 70,
-										}}
-									/>
-									<datalist id='locales'>
-										<option value='de-DE' />
-										<option value='en-US' />
-										<option value='fr-FR' />
-										<option value='hu-HU' />
-										<option value='zh-CN' />
-									</datalist>
-								</>
-							}
-							{this.props.isSignedIn && this.props.calendarsLoadState === StateLoad.Loaded &&
-								<button
-									className={cssButton}
-									type='button'
-									title={`Create`}
-									onClick={this.onCreateClicked}
-								>
-									{`+`}
-								</button>
-							}
-						</CompRow>
-						{this.props.isSignedIn &&
-							<CompOnMount onMount={this.onEventListsMounted}>
-								<CompLoadGuard
-									what={`calendars`}
-									loadState={this.props.calendarsLoadState}
-									render={this.renderRoutes}
-								/>
-
-							</CompOnMount>
 						}
-					</CompRow>
-					:
-					<div>{`Loading Google API...`}</div>
+						{this.props.gapiReady ?
+							<CompRow distance={5} isVertical>
+								<CompRow distance={5}>
+									<div className={cssInputLabelInline}>
+										{process.env.REACT_APP_VERSION}
+									</div>
+									<button
+										className={cssButton}
+										type='button'
+										onClick={this.onSignInClicked}
+									>
+										{this.props.isSignedIn ? 'Sign out' : 'Sign in'}
+									</button>
+									{this.props.isSignedIn &&
+										<button
+											className={cssButton}
+											type='button'
+											title={`Reload events`}
+											onClick={this.onReloadEventsClicked}
+										>
+											{`⟳ 📅`}
+										</button>
+									}
+									<Route path={Path.Home} render={() => this.props.isSignedIn &&
+										<CompRow distance={5}>
+											<CompRow distance={5}>
+												<div
+													className={cssInputLabelInline}
+													title={`Start weeks`}
+												>
+													{`S:`}
+												</div>
+												<input
+													className={cssInput}
+													type='number'
+													max={this.state.endWeeks}
+													step={`any`}
+													value={this.state.startWeeksStringValue}
+													onChange={this.onStartWeeksChanged}
+													onBlur={this.onStarWeeksBlurred}
+													style={{
+														width: 50,
+													}}
+												/>
+											</CompRow>
+											<CompRow distance={5}>
+												<div
+													className={cssInputLabelInline}
+													title={`End weeks`}
+												>
+													{`E:`}
+												</div>
+												<input
+													className={cssInput}
+													type='number'
+													min={this.state.startWeeks}
+													step={`any`}
+													value={this.state.endWeeksStringValue}
+													onChange={this.onEndWeeksChanged}
+													onBlur={this.onEndWeeksBlurred}
+													style={{
+														width: 50,
+													}}
+												/>
+											</CompRow>
+										</CompRow>
+									}
+									/>
+									{this.props.isSignedIn &&
+										<button
+											className={cssButton}
+											type='button'
+											title={`Home`}
+											onClick={this.onHomeClicked}
+										>
+											{`🏠`}
+										</button>
+									}
+									{this.props.isSignedIn &&
+										<>
+											<input
+												className={cssInput}
+												type='text'
+												value={this.state.localeValue}
+												onChange={this.onLocaleChanged}
+												onBlur={this.onLocaleBlurred}
+												list='locales'
+												style={{
+													width: 70,
+												}}
+											/>
+											<datalist id='locales'>
+												<option value='de-DE' />
+												<option value='en-US' />
+												<option value='fr-FR' />
+												<option value='hu-HU' />
+												<option value='zh-CN' />
+											</datalist>
+										</>
+									}
+									{this.props.isSignedIn && this.props.calendarsLoadState === StateLoad.Loaded &&
+										<button
+											className={cssButton}
+											type='button'
+											title={`Create`}
+											onClick={this.onCreateClicked}
+										>
+											{`+`}
+										</button>
+									}
+								</CompRow>
+								{this.props.isSignedIn &&
+									<CompOnMount onMount={this.onEventListsMounted}>
+										<CompLoadGuard
+											what={`calendars`}
+											loadState={this.props.calendarsLoadState}
+											render={this.renderRoutes}
+										/>
+
+									</CompOnMount>
+								}
+							</CompRow>
+							:
+							<div>{`Loading Google API...`}</div>
+						}
+					</>
 				}
 			</CompRow>
 		)
@@ -380,13 +390,14 @@ export const CompApp = connect(
 	(state: State/* , ownProps: CompAppPropsOwn */) => withInterface<CompAppPropsFromStore>({
 		gapiReady: state.gapiReady,
 		isSignedIn: state.isSignedIn,
-		calendarsLoadState: state.loadStatesById[LOAD_STATE_CALENDARS],
+		calendarsLoadState: state.loadStatesById[StateLoadId.Calendars],
 		locale: state.locale,
 		errors: state.errors,
 		gotEvents: gotEventsSelector(state),
 		endWeeks: routeQueryEndWeeksSelector(state),
 		startWeeks: routeQueryStartWeeksSelector(state),
 		location: state.router.location,
+		isUiBlocked: isUiBlockedSelector(state),
 	}),
 )(CompAppPure)
 

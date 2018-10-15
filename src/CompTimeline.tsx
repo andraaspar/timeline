@@ -4,6 +4,7 @@ import { TSet, withInterface } from 'illa/Type'
 import React, { Component } from 'react'
 import { connect, DispatchProp } from 'react-redux'
 import { makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars'
+import { makeActionRequestEventDelete } from './ActionRequestEventDelete'
 import { CompEventList } from './CompEventList'
 import { CompLoadGuard } from './CompLoadGuard'
 import { CompRow } from './CompRow'
@@ -14,7 +15,7 @@ import { makeRouteHome } from './RouteHome'
 import { eventsOrderedFutureSelector, eventsOrderedPastSelector, gotEventsSelector, routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
 import { State } from './State'
 import { StateLoad } from './StateLoad'
-import { LOAD_STATE_CALENDARS, LOAD_STATE_EVENTS } from './statics'
+import { StateLoadId } from './StateLoadId'
 import { BLACK_4, BOLD, FONT_SIZE_TINY, LINE_HEIGHT_TINY } from './StyleConstants'
 import { getDuration } from './UtilTime'
 
@@ -72,6 +73,7 @@ class CompTimelinePure extends Component<CompTimelineProps, CompTimelineState/* 
 								now={this.props.now}
 								locale={this.props.locale}
 								isPast={true}
+								onRequestDelete={this.onRequestDelete}
 							/>
 							<button
 								className={cssButton}
@@ -90,6 +92,7 @@ class CompTimelinePure extends Component<CompTimelineProps, CompTimelineState/* 
 								eventsLoadState={this.props.eventsLoadState}
 								now={this.props.now}
 								locale={this.props.locale}
+								onRequestDelete={this.onRequestDelete}
 							/>
 							<button
 								className={cssButton}
@@ -134,16 +137,25 @@ class CompTimelinePure extends Component<CompTimelineProps, CompTimelineState/* 
 			endWeeks: this.props.endWeeks + diff,
 		})))
 	}
+	
+	onRequestDelete = (event: IEvent) => {
+		if (event && event.id && confirm(`Are you sure you want to delete ‘${event.summary}’?`)) {
+			this.props.dispatch(makeActionRequestEventDelete({
+				calendarId: event.calendarId,
+				eventId: event.id,
+			}))
+		}
+	}
 }
 
 export const CompTimeline = connect(
 	(state: State/* , ownProps: CompTimelinePropsOwn */) => withInterface<CompTimelinePropsFromStore>({
-		calendarsLoadState: state.loadStatesById[LOAD_STATE_CALENDARS],
+		calendarsLoadState: state.loadStatesById[StateLoadId.Calendars],
 		isSignedIn: state.isSignedIn,
 		calendarsById: state.calendarsById,
 		orderedFutureEvents: eventsOrderedFutureSelector(state),
 		orderedPastEvents: eventsOrderedPastSelector(state),
-		eventsLoadState: state.loadStatesById[LOAD_STATE_EVENTS],
+		eventsLoadState: state.loadStatesById[StateLoadId.Events],
 		now: state.now,
 		locale: state.locale,
 		gotEvents: gotEventsSelector(state),

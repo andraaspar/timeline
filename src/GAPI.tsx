@@ -140,4 +140,19 @@ export namespace GAPI {
 				})
 		})
 	}
+	
+	export function deleteEvent(calendarId: string, eventId: string) {
+		return new Promise<void>((resolve, reject) => {
+			gapi.client.calendar.events.delete({
+				calendarId,
+				eventId,
+			})
+				.then(() => {
+					resolve()
+				})
+				.catch(e => {
+					reject(e)
+				})
+		})
+	}
 }
