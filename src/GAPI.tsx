@@ -2,6 +2,7 @@ import { makeActionSetSignedIn } from './ActionSetSignedIn'
 import { ICalendar } from './ICalendar'
 import { IEvent, IEventContext, makeIEventFromCalendarEvent } from './IEvent'
 import { routeQueryEndWeeksSelector, routeQueryStartWeeksSelector } from './selectors'
+import { State } from './State'
 import { WEEK } from './statics'
 import { store } from './store'
 
@@ -76,7 +77,7 @@ export namespace GAPI {
 
 	export function loadEventsFromCalendar(calendarId: string, events: ReadonlyArray<IEvent> = [], pageToken?: string) {
 		return new Promise<IEvent[]>((resolve, reject) => {
-			const state = store.getState()!
+			const state = store.getState() as State
 			const startWeeks = routeQueryStartWeeksSelector(state)
 			const endWeeks = routeQueryEndWeeksSelector(state)
 			gapi.client.calendar.events.list({
@@ -109,9 +110,9 @@ export namespace GAPI {
 	export function loadEventsFromAllCalendars() {
 		return new Promise<IEvent[]>((resolve, reject) => {
 			Promise.all(
-				Object.keys(store.getState()!.calendarsById)
+				Object.keys((store.getState() as State).calendarsById)
 					.filter(calendarId => {
-						const calendar = store.getState()!.calendarsById[calendarId]
+						const calendar = (store.getState() as State).calendarsById[calendarId]
 						return !!calendar.selected
 					})
 					.map(calendarId => loadEventsFromCalendar(calendarId))

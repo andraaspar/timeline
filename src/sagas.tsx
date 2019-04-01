@@ -1,6 +1,5 @@
 import { push } from 'connected-react-router'
-import { delay } from 'redux-saga'
-import { fork, put, select, take, takeLatest } from 'redux-saga/effects'
+import { delay, fork, put, select, take, takeLatest } from 'redux-saga/effects'
 import { makeActionAddErrors } from './ActionAddErrors'
 import { ActionLoadCalendars } from './ActionLoadCalendars'
 import { ActionLoadEventsFromAllCalendars, makeActionLoadEventsFromAllCalendars } from './ActionLoadEventsFromAllCalendars'

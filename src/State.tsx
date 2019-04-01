@@ -29,7 +29,10 @@ function makeState(): State {
 	return {
 		uiBlockers: {},
 		loadStatesById: {
-			...zipObject(allLoadStates, allLoadStates.map(() => StateLoad.Never)),
+			...zipObject(
+				allLoadStates,
+				allLoadStates.map(() => StateLoad.Never),
+			),
 		},
 		calendarsById: {},
 		eventsById: {},
@@ -38,7 +41,7 @@ function makeState(): State {
 		now: Date.now(),
 		locale: getLocale(),
 		errors: [],
-		router: null as any,
+		router: undefined as any,
 	}
 }
 
@@ -47,12 +50,17 @@ export function reducerState(state = makeState(), action: TAction): State {
 		case ActionType.LoadCalendars:
 			return {
 				...state,
-				calendarsById: action.restoreOldOnFailure ? state.calendarsById : {},
+				calendarsById: action.restoreOldOnFailure
+					? state.calendarsById
+					: {},
 			}
 		case ActionType.SetCalendars:
 			return {
 				...state,
-				calendarsById: zipObject(action.calendars.map(_ => _.id), action.calendars),
+				calendarsById: zipObject(
+					action.calendars.map(_ => _.id),
+					action.calendars,
+				),
 			}
 		case ActionType.LoadEventsFromAllCalendars:
 			return {
@@ -62,7 +70,10 @@ export function reducerState(state = makeState(), action: TAction): State {
 		case ActionType.SetEvents:
 			return {
 				...state,
-				eventsById: zipObject(action.events.map(_ => _.id + ''), action.events),
+				eventsById: zipObject(
+					action.events.map(_ => _.id + ''),
+					action.events,
+				),
 			}
 		case ActionType.SetGapiReady:
 			return {
@@ -104,7 +115,10 @@ export function reducerState(state = makeState(), action: TAction): State {
 			}
 		case ActionType.SetBlockUi: {
 			const current = state.uiBlockers[action.id]
-			const next = Math.max(0, action.block ? (current + 1 || 1) : (current - 1) || 0)
+			const next = Math.max(
+				0,
+				action.block ? current + 1 || 1 : current - 1 || 0,
+			)
 			if (next) {
 				return {
 					...state,

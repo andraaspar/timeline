@@ -11,6 +11,7 @@ import { ActionSetGapiReady } from './ActionSetGapiReady'
 import { ActionSetLocale } from './ActionSetLocale'
 import { ActionSetNow } from './ActionSetNow'
 import { ActionSetSignedIn } from './ActionSetSignedIn'
+import { ActionSetVisibility } from './ActionSetVisibility'
 import { ActionSignIn } from './ActionSignIn'
 import { ActionSignOut } from './ActionSignOut'
 import { ActionUpdateStateLoad } from './ActionUpdateStateLoad'
@@ -32,3 +33,4 @@ export type TAction =
 	| ActionUpdateStateLoad
 	| ActionRequestEventInsert
 	| ActionSetBlockUi
+	| ActionSetVisibility
